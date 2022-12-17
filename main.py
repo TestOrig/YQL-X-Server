@@ -1,8 +1,7 @@
 from flask import Flask, request, redirect
-import sys, requests
+import sys
 from YQL import YQL
 import XMLGenerator
-import json, re
 
 app = Flask(__name__)
 sys.stdout.reconfigure(encoding='utf-8')
@@ -21,15 +20,19 @@ def legacyyql():
 
 @app.route('/yql/weather/dgw', methods=["POST"])
 def legacydgw():
+    print("Pre iOS 5 app found!")
     sentXML = request.data.decode()
     reqType = sentXML[sentXML.index("y id=")+5:sentXML.index(" time")].replace('"', "")
     print(reqType)
     if reqType == "3":
         q = sentXML[sentXML.index("ase>")+4:sentXML.index("</phr")]
-        print(q)
+        if "|" in q:
+            q = q.split("|")[1]
         return XMLGenerator.getXMLforSearchWithYQLLegacy(yql, q)
     if reqType == "30":
         q = sentXML[sentXML.index("id>")+3:sentXML.index("</id")]
+        if "|" in q:
+            q = q.split("|")[1]
         print("q = " + q)
         return XMLGenerator.getXMLforWeatherWithYQLLegacy(yql, q)
     return ""

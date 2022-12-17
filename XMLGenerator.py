@@ -19,6 +19,8 @@ dateTable = {
   6: 7
 }
 
+# Helper Functions
+
 def getLatLongForQ(q):
     latIndex1 = q.index('lat=')+4
     latIndex2 = q.index(' and')
@@ -82,6 +84,18 @@ def dayArray():
     dayNext(5),
     dayNext(6)
   ]
+
+# Hour relatively to OWM output
+# Hourly reported from OWM api goes like this,
+# First hour: The Start of the current hour
+# Second hour: Second hour and etc
+# So if you retrieve the hourly data on 11:58PM
+# The first hour reported would be 11:00PM
+
+def hourNext(n):
+  return (datetime.datetime.now().replace(microsecond=0, second=0, minute=0)+datetime.timedelta(hours=n)).strftime("%H:%M")
+
+# Actual XMLGenerator functions
 
 def getXMLforWeatherWithYQL(yql, q):
   if not "lat=" in q:
@@ -163,40 +177,40 @@ def getXMLforWeatherWithYQL(yql, q):
     <results>
       <location woeid="{woeid}">
         <hourlyforecast>
-          <hour time24="00:00">
+          <hour time24="{hourNext(0)}">
             <condition code="{weatherIcon(weather['hourly'][0]['weather'][0]['icon'])}" poP="{weatherPoP(weather['hourly'][0]['pop'])}" temp="{weather['hourly'][0]['temp']}" />
           </hour>
-          <hour time24="02:00">
+          <hour time24="{hourNext(1)}">
             <condition code="{weatherIcon(weather['hourly'][1]['weather'][0]['icon'])}" poP="{weatherPoP(weather['hourly'][1]['pop'])}" temp="{weather['hourly'][1]['temp']}" />
           </hour>
-          <hour time24="04:00">
+          <hour time24="{hourNext(2)}">
             <condition code="{weatherIcon(weather['hourly'][2]['weather'][0]['icon'])}" poP="{weatherPoP(weather['hourly'][2]['pop'])}" temp="{weather['hourly'][2]['temp']}" />
           </hour>
-          <hour time24="06:00">
+          <hour time24="{hourNext(3)}">
             <condition code="{weatherIcon(weather['hourly'][3]['weather'][0]['icon'])}" poP="{weatherPoP(weather['hourly'][3]['pop'])}" temp="{weather['hourly'][3]['temp']}" />
           </hour>
-          <hour time24="08:00">
+          <hour time24="{hourNext(4)}">
             <condition code="{weatherIcon(weather['hourly'][4]['weather'][0]['icon'])}" poP="{weatherPoP(weather['hourly'][4]['pop'])}" temp="{weather['hourly'][4]['temp']}" />
           </hour>
-          <hour time24="10:00">
+          <hour time24="{hourNext(5)}">
             <condition code="{weatherIcon(weather['hourly'][5]['weather'][0]['icon'])}" poP="{weatherPoP(weather['hourly'][5]['pop'])}" temp="{weather['hourly'][5]['temp']}" />
           </hour>
-          <hour time24="12:00">
+          <hour time24="{hourNext(6)}">
             <condition code="{weatherIcon(weather['hourly'][6]['weather'][0]['icon'])}" poP="{weatherPoP(weather['hourly'][6]['pop'])}" temp="{weather['hourly'][6]['temp']}" />
           </hour>
-          <hour time24="14:00">
+          <hour time24="{hourNext(7)}">
             <condition code="{weatherIcon(weather['hourly'][7]['weather'][0]['icon'])}" poP="{weatherPoP(weather['hourly'][7]['pop'])}" temp="{weather['hourly'][7]['temp']}" />
           </hour>
-          <hour time24="16:00">
+          <hour time24="{hourNext(8)}">
             <condition code="{weatherIcon(weather['hourly'][8]['weather'][0]['icon'])}" poP="{weatherPoP(weather['hourly'][8]['pop'])}" temp="{weather['hourly'][8]['temp']}" />
           </hour>
-          <hour time24="18:00">
+          <hour time24="{hourNext(9)}">
             <condition code="{weatherIcon(weather['hourly'][9]['weather'][0]['icon'])}" poP="{weatherPoP(weather['hourly'][9]['pop'])}" temp="{weather['hourly'][9]['temp']}" />
           </hour>
-          <hour time24="20:00">
+          <hour time24="{hourNext(10)}">
             <condition code="{weatherIcon(weather['hourly'][10]['weather'][0]['icon'])}" poP="{weatherPoP(weather['hourly'][10]['pop'])}" temp="{weather['hourly'][10]['temp']}" />
           </hour>
-          <hour time24="22:00">
+          <hour time24="{hourNext(11)}">
             <condition code="{weatherIcon(weather['hourly'][11]['weather'][0]['icon'])}" poP="{weatherPoP(weather['hourly'][11]['pop'])}" temp="{weather['hourly'][11]['temp']}" />
           </hour>
         </hourlyforecast>
@@ -228,10 +242,10 @@ def getXMLforWeatherWithYQLLegacy(yql, q):
               <result>
                 <list>
                     <item>
-                      <location city="{city}" id="{woeid}"/>
-                      <units temperature="c"/>
-                      <condition time="{currTime}" temp="{weather['current']['temp']}" code="{weatherIcon(weather['current']['weather'][0]['icon'])}"/>
-                      <astronomy moonfacevisible="0" moonphase="0" sunrise="{sunrise}" sunset="{sunset}"/>
+                      <location city="{city}" id="{woeid}" />
+                      <units temperature="F" />
+                      <condition time="{currTime}" temp="{weather['current']['temp']}" code="{weatherIcon(weather['current']['weather'][0]['icon'])}" />
+                      <astronomy moonfacevisible="0" moonphase="0" sunrise="{sunrise}" sunset="{sunset}" />
                       <forecast>
                         <day dayofweek="{days[0]}" code="{weatherIcon(weather['daily'][0]['weather'][0]['icon'])}" high="{weather['daily'][0]['temp']['max']}" low="{round(float(weather['daily'][0]['temp']['min']))}" />
                         <day dayofweek="{days[1]}" code="{weatherIcon(weather['daily'][1]['weather'][0]['icon'])}" high="{weather['daily'][1]['temp']['max']}" low="{round(float(weather['daily'][1]['temp']['min']))}" />

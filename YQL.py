@@ -1,4 +1,4 @@
-import csv, mmap, io, json
+import mmap, json
 
 class YQL:
     def __init__(self):
@@ -21,16 +21,13 @@ class YQL:
     
     def getWoeidName(self, q, formatted=False):
         woeid = self.getWoeid(q, formatted)
-        print(woeid)
         ret = self.json_file["woeid"][woeid]
         return(ret)
        
     def getSimilarName(self, q):
         resultsList = []
-        match = False
         for i in self.json_file["country"].items():
             if q.lower() in i[0].lower():
-                match = True
                 resultsList.append({
                     "name": i[0],
                     "iso": self.json_file["country"][i[0]][1],
@@ -39,7 +36,6 @@ class YQL:
                 })
         for i in self.json_file["city"].items():
             if q.lower() in i[0].lower():
-                match = True
                 resultsList.append({
                     "name": i[0],
                     "iso": self.json_file["city"][i[0]][1],
@@ -48,7 +44,6 @@ class YQL:
                 })
         for i in self.json_file["state"].items():
             if q.lower() in i[0].lower():
-                match = True
                 resultsList.append({
                     "name": i[0],
                     "iso": self.json_file["state"][i[0]][1],
@@ -57,7 +52,6 @@ class YQL:
                 })
         for i in self.json_file["small"].items():
             if q.lower() in i[0].lower():
-                match = True
                 resultsList.append({
                     "name": i[0],
                     "iso": self.json_file["small"][i[0]][1],
