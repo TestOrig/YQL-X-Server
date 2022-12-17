@@ -8,7 +8,7 @@ class YQL:
         self.json_disk_file.close()
         self.json_file = json.load(self.json_mem_file)
 
-    def getWoeid(self, q, formatted=False):
+    def getWoeidInQuery(self, q, formatted=False):
         if formatted:
             return q
         try:
@@ -19,8 +19,16 @@ class YQL:
             woeid = str(woeid).split(" ")[0]
         return woeid
     
-    def getWoeidName(self, q, formatted=False):
-        woeid = self.getWoeid(q, formatted)
+    def getWoeidFromName(self, name):
+        woeid = self.getSimilarName(name)[0]['woeid']
+        return woeid
+
+    def getWoeidName(self, q, formatted=False, nameInQuery=False):
+        if not nameInQuery:
+            woeid = self.getWoeidInQuery(q, formatted)
+        else:
+            print(q[q.find("query='")+7:q.find(", ")])
+            return q[q.find("query='")+7:q.find(", ")]
         ret = self.json_file["woeid"][woeid]
         return(ret)
        

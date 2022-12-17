@@ -95,12 +95,43 @@ def dayArray():
 def hourNext(n):
   return (datetime.datetime.now().replace(microsecond=0, second=0, minute=0)+datetime.timedelta(hours=n)).strftime("%H:%M")
 
+# Mapping OWM moon phases
+def moonPhase(phase):
+  # New Moon
+  if phase == 0 or phase == 1:
+    return 1
+  # First Quarter Moon
+  elif phase == 0.25:
+    return 7
+  # Full Moon
+  elif phase == 0.5:
+    return 0
+  # Last Quarter Moon
+  elif phase == 0.75:
+    return 19
+  # Waning Crescent
+  elif 0.75 <= phase <= 1:
+    return 21
+  # Waning Gibous
+  elif 0.50 <= phase <= 0.75:
+    return 17
+  # Waxing Gibous
+  elif 0.25 <= phase <= 0.50:
+    return 9
+  # Waxing Crescent
+  elif 0 <= phase <= 0.50:
+    return 4
+
 # Actual XMLGenerator functions
 
 def getXMLforWeatherWithYQL(yql, q):
   if not "lat=" in q:
-    woeid = yql.getWoeid(q)
-    city = yql.getWoeidName(q)
+    if "limit 1" in q:
+      city = yql.getWoeidName(q, nameInQuery=True)
+      woeid = yql.getWoeidFromName(city)
+    else:
+      city = yql.getWoeidName(q)
+      woeid = yql.getWoeidInQuery(q)
     location = geolocator.geocode(city)
     lat = location.latitude
     lng = location.longitude
@@ -121,6 +152,7 @@ def getXMLforWeatherWithYQL(yql, q):
   print(weatherIcon(weather['daily'][1]['weather'][0]['icon']))
   # Formatted for your viewing needs
   print(days)
+  print("moon phase = " + str(moonPhase(weather['daily'][0]['moon_phase'])))
   xml = f'''<?xml version="1.0" encoding="UTF-8"?>
 <query xmlns:yahoo="http://www.yahooapis.com/v1/base.rng" yahoo:count="2" yahoo:created="2012-10-30T11:36:42Z" yahoo:lang="en-US">
   <meta>
@@ -142,7 +174,7 @@ def getXMLforWeatherWithYQL(yql, q):
   <results>
     <results>
       <location city="{city}" country="" latitude="{lat}" locationID="ASXX0075" longitude="{lng}" state="" woeid="{woeid}">
-        <currently barometer="{weather['current']['pressure']}" feelsLike="{weather['current']['feels_like']}" moonfacevisible="0%" moonphase="0" sunrise24="{sunrise}" sunset24="{sunset}" temp="{weather['current']['temp']}" time24="{currTime}" timezone="GMT" windChill="0" windSpeed="{weather['current']['wind_speed']}">
+        <currently barometer="{weather['current']['pressure']}" feelsLike="{weather['current']['feels_like']}" moonfacevisible="0%" moonphase="{moonPhase(weather['daily'][0]['moon_phase'])}" sunrise24="{sunrise}" sunset24="{sunset}" temp="{weather['current']['temp']}" time24="{currTime}" timezone="GMT" windChill="0" windSpeed="{weather['current']['wind_speed']}">
           <condition code="{weatherIcon(weather['current']['weather'][0]['icon'])}" />
         </currently>
         <forecast>
@@ -222,7 +254,7 @@ def getXMLforWeatherWithYQL(yql, q):
   return finalR
     
 def getXMLforWeatherWithYQLLegacy(yql, q):
-  woeid = yql.getWoeid(q, formatted=True)
+  woeid = yql.getWoeidInQuery(q, formatted=True)
   city = yql.getWoeidName(q, formatted=True)
   location = geolocator.geocode(city)
   lat = location.latitude
