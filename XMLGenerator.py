@@ -164,7 +164,11 @@ def getXMLforWeatherWithYQL(yql, q):
     lat = latlong[0]
     lng = latlong[1]
     location = (geolocator.reverse(f"{lat}, {lng}")).raw['address']
-    city = location.get('city', location.get('county', 'Placeholder'))
+    print(location)
+    try:
+      city = location['town']
+    except:
+      city = location['region']
     woeid = yql.getWoeidFromName(city)
     
   weather = getWeather(lat, lng, woeid)

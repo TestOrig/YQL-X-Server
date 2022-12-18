@@ -20,7 +20,7 @@ class YQL:
         return woeid
     
     def getWoeidFromName(self, name):
-        print("Getting woeid from name")
+        print("Getting woeid from name, " + name)
         woeid = self.getSimilarName(name)[0]['woeid']
         return woeid
 
