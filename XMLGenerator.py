@@ -164,7 +164,6 @@ def getXMLforWeatherWithYQL(yql, q):
     lat = latlong[0]
     lng = latlong[1]
     location = (geolocator.reverse(f"{lat}, {lng}")).raw['address']
-    print(location)
     try:
       city = location['town']
     except:

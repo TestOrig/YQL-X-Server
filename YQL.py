@@ -21,8 +21,15 @@ class YQL:
     
     def getWoeidFromName(self, name):
         print("Getting woeid from name, " + name)
-        woeid = self.getSimilarName(name)[0]['woeid']
-        return woeid
+        try:
+            result = self.getSimilarName(name)[0]['woeid']
+            return result
+        except:
+            # Generate woeid from name
+            woeid = ""
+            for letter in name:
+                woeid += str(ord(letter))
+            return woeid
 
     def getWoeidName(self, q, formatted=False, nameInQuery=False):
         if not nameInQuery:
@@ -73,6 +80,5 @@ class YQL:
         #     print(i)    
         #     if any(o["name"] == i["name"] for o in resultsList):
         #         resultsList.remove(i)
-                
+
         return resultsList
-    
