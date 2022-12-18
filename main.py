@@ -57,7 +57,10 @@ def searchReq(q):
     return XMLGenerator.getXMLforSearchWithYQL(yql, q)
 
 def weatherReq(q):
-    return XMLGenerator.getXMLforWeatherWithYQL(yql, q)
+    if not "," in q:
+        return XMLGenerator.getXMLforWeatherWithYQL(yql, q)
+    else:
+        return "We don't support multiple woeids in requests..."
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5002)
