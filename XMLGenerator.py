@@ -1,4 +1,4 @@
-import json
+import sys
 import requests
 import re
 import datetime
@@ -7,7 +7,10 @@ from geopy.geocoders import Nominatim
 geolocator = Nominatim(user_agent="iOSLegacyWeather")
 
 ## FILL THIS IN WITH YOUR OPENWEATHERMAP API KEY 
-owmkey = '779777aefcb32182044b197deca1c179'
+owmkey = sys.argv[1]
+
+# This dictionary contains woeids and data for caching along with timestamps
+woeidCache = {}
 
 dateTable = {
   0: 1,
@@ -33,14 +36,35 @@ def getLatLongForQ(q):
     print("longIndex1 = " + q)
     return [lat, long]
 
-def getWeather(lat, lng):
+def getWeather(lat, lng, woeid):
+    # We will try to see if a cached response is in the dict, if so and the timestamp matches the hour
+    # it was gotten, we will return that instead of abusing the API :)
+    try:
+      cachedResponse = woeidCache[woeid]
+      if cachedResponse:
+        if cachedResponse['timestamp'].strftime("%h") == datetime.datetime.now().strftime("%h"):
+          print("Returning cached response")
+          return cachedResponse['response']
+    except:
+      # Some error happened, go get the data from API
+      pass
     uri = 'https://api.openweathermap.org/data/2.5/onecall'
     querystring = {"lat": lat, "lon": lng,
      "exclude": "alerts,minutely",
      "units": "metric",
      "appid": owmkey}
-    return (requests.request("GET", uri, params=querystring)).json()
+    response = (requests.request("GET", uri, params=querystring)).json()
+    if response:
+      # If woeid in cache, we replace, if not we add, easy!
+      if woeid not in woeidCache:
+        woeidCache.update({woeid: {"response": response, "timestamp": datetime.datetime.now()}})
+      else:
+        woeidCache[woeid] = {woeid: {"response": response, "timestamp": datetime.datetime.now()}}
+      return response
+    # TODO, None handling lmao
+    return None
 
+# TODO what are these values
 def weatherIcon(n):
     if n in ['01d', '01n']:
         return 31
@@ -141,9 +165,9 @@ def getXMLforWeatherWithYQL(yql, q):
     lng = latlong[1]
     location = (geolocator.reverse(f"{lat}, {lng}")).raw['address']
     city = location.get('city', location.get('county', 'Placeholder'))
-    woeid = "00000"
+    woeid = yql.getWoeidFromName(city)
     
-  weather = getWeather(lat, lng)
+  weather = getWeather(lat, lng, woeid)
   currTime = weatherDate(weather["current"]["dt"])
   print(currTime)
   sunrise = weatherSunrise(weather["current"]["sunrise"])
@@ -152,7 +176,8 @@ def getXMLforWeatherWithYQL(yql, q):
   print(weatherIcon(weather['daily'][1]['weather'][0]['icon']))
   # Formatted for your viewing needs
   print(days)
-  print("moon phase = " + str(moonPhase(weather['daily'][0]['moon_phase'])))
+  print("post = " + str(float(weather['daily'][0]['moon_phase'])))
+  print("moon phase = " + str(moonPhase(float(weather['daily'][0]['moon_phase']))))
   xml = f'''<?xml version="1.0" encoding="UTF-8"?>
 <query xmlns:yahoo="http://www.yahooapis.com/v1/base.rng" yahoo:count="2" yahoo:created="2012-10-30T11:36:42Z" yahoo:lang="en-US">
   <meta>
@@ -174,7 +199,7 @@ def getXMLforWeatherWithYQL(yql, q):
   <results>
     <results>
       <location city="{city}" country="" latitude="{lat}" locationID="ASXX0075" longitude="{lng}" state="" woeid="{woeid}">
-        <currently barometer="{weather['current']['pressure']}" feelsLike="{weather['current']['feels_like']}" moonfacevisible="0%" moonphase="{moonPhase(weather['daily'][0]['moon_phase'])}" sunrise24="{sunrise}" sunset24="{sunset}" temp="{weather['current']['temp']}" time24="{currTime}" timezone="GMT" windChill="0" windSpeed="{weather['current']['wind_speed']}">
+        <currently barometer="{weather['current']['pressure']}" feelsLike="{weather['current']['feels_like']}" moonfacevisible="{moonPhase(weather['daily'][0]['moon_phase'])}" moonphase="{moonPhase(weather['daily'][0]['moon_phase'])}" sunrise24="{sunrise}" sunset24="{sunset}" temp="{weather['current']['temp']}" time24="{currTime}" timezone="GMT" windChill="0" windSpeed="{weather['current']['wind_speed']}">
           <condition code="{weatherIcon(weather['current']['weather'][0]['icon'])}" />
         </currently>
         <forecast>
@@ -260,7 +285,7 @@ def getXMLforWeatherWithYQLLegacy(yql, q):
   lat = location.latitude
   lng = location.longitude
     
-  weather = getWeather(lat, lng)
+  weather = getWeather(lat, lng, woeid)
   currTime = weatherDate(weather["current"]["dt"])
   print(currTime)
   sunrise = weatherSunrise(weather["current"]["sunrise"])
