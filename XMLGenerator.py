@@ -167,7 +167,10 @@ def getXMLforWeatherWithYQL(yql, q):
     try:
       city = location['town']
     except:
-      city = location['region']
+      try:
+        city = location['region']
+      except:
+        city = location['city']
     woeid = yql.getWoeidFromName(city)
     
   weather = getWeather(lat, lng, woeid)
