@@ -52,7 +52,7 @@ def weatherEndpoint():
         elif 'partner.weather.forecasts' in q:
             # Weather Request
             return weatherReq(q)
-    
+
 def searchReq(q):
     return XMLGenerator.getXMLforSearchWithYQL(yql, q)
 
