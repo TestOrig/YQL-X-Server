@@ -87,8 +87,9 @@ def weatherIcon(n):
 def weatherPoP(pop):
   return int(float(pop)*100)
 
-def weatherDate(dt):
-  return str(datetime.datetime.fromtimestamp(dt).time())
+def weatherDate(dt, timezone_offset):
+  currTime = time.gmtime(dt+timezone_offset)
+  return f"{str(currTime.tm_hour)}:{str(currTime.tm_min)}"
 
 def weatherSunrise(sunrise):
   return str(datetime.datetime.fromtimestamp(sunrise).time())
@@ -178,9 +179,13 @@ def getXMLforWeatherWithYQL(yql, q):
     woeid = yql.getWoeidFromName(city)
     
   weather = getWeather(lat, lng, woeid)
-  currTime = weatherDate(weather["current"]["dt"])
-  sunrise = weatherSunrise(weather["current"]["sunrise"])
-  sunset = weatherSunset(weather["current"]["sunset"])
+  currTime = weatherDate(weather["current"]["dt"], weather["timezone_offset"])
+  try:
+    sunrise = weatherSunrise(weather["current"]["sunrise"])
+    sunset = weatherSunset(weather["current"]["sunset"])
+  except:
+    sunrise = "00:00AM"
+    sunset = "00:00AM"
   days = dayArray()
   print(weatherIcon(weather['daily'][1]['weather'][0]['icon']))
   # Formatted for your viewing needs
