@@ -1,6 +1,8 @@
 from flask import Flask, request, redirect
-import sys
+import sys, os, json
 from YQL import YQL
+from StocksQParser import *
+from xml.etree import ElementTree
 import XMLGenerator
 
 app = Flask(__name__)
@@ -11,6 +13,17 @@ yql = YQL()
 @app.route('/')
 def hello_world():
     return "Sup"
+
+# Stocks
+@app.route('/dgw', methods=["POST"])
+def dgw():
+    sentXML = request.data.decode()
+    root = ElementTree.fromstring(sentXML)
+    type = root[0].attrib['type']
+    q = parseQuery(sentXML)
+    return XMLGenerator.getStocksXMLWithQandType(q, type)
+
+# Weather
 
 # iOS 5 seems to use this endpoint, let's redirect to the regular function
 @app.route('/v1/yql')
@@ -29,13 +42,13 @@ def legacydgw():
             q = sentXML[sentXML.index("ase>")+4:sentXML.index("</phr")]
             if "|" in q:
                 q = q.split("|")[1]
-            return XMLGenerator.getXMLforSearchWithYQLLegacy(yql, q)
+            return XMLGenerator.getLegacyWeatherSearchXMLWithYQLandQ(yql, q)
         if reqType == "30":
             q = sentXML[sentXML.index("id>")+3:sentXML.index("</id")]
             if "|" in q:
                 q = q.split("|")[1]
             print("q = " + q)
-            return XMLGenerator.getXMLforWeatherWithYQLLegacy(yql, q)
+            return XMLGenerator.getLegacyWeatherXMLWithYQLandQ(yql, q)
         return ""
 
 # iOS 6 contacts this endpoint for all things weather
@@ -54,10 +67,14 @@ def weatherEndpoint():
             return weatherReq(q)
 
 def searchReq(q):
-    return XMLGenerator.getXMLforSearchWithYQL(yql, q)
+    return XMLGenerator.getWeatherSearchXMLWithYQLandQ(yql, q)
 
 def weatherReq(q):
-    return XMLGenerator.getXMLforWeatherWithYQL(yql, q)
+    return XMLGenerator.getWeatherXMLWithYQLandQ(yql, q)
 
 if __name__ == '__main__':
+    if not os.path.exists("generatedWoeids.json"):
+        with open("generatedWoeids.json", "w") as database:
+            database.write(json.dumps({}))
+            database.close()
     app.run(host="0.0.0.0", port=5002)

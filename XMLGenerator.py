@@ -1,157 +1,14 @@
-import sys
-import requests
-import re
-import datetime
-import time
+import json
+import re, time, requests
 from iso3166 import countries
 from geopy.geocoders import Nominatim
+from Weather import *
+from Stocks import *
 geolocator = Nominatim(user_agent="iOSLegacyWeather")
 
-## FILL THIS IN WITH YOUR OPENWEATHERMAP API KEY 
-owmkey = sys.argv[1]
-
-# This dictionary contains woeids and data for caching along with timestamps
-woeidCache = {}
-
-dateTable = {
-  0: 1,
-  1: 2,
-  2: 3,
-  3: 4,
-  4: 5,
-  5: 6,
-  6: 7
-}
-
-# Helper Functions
-
-def getLatLongForQ(q):
-    latIndex1 = q.index('lat=')+4
-    latIndex2 = q.index(' and')
-    longIndex1 = q.index('lon=')+4
-    longIndex2 = q.index(' and', latIndex2+3)
-    lat = q[latIndex1:latIndex2]
-    long = q[longIndex1:longIndex2-1]
-    print("lat = " + lat)
-    print("long = " + long)
-    print("longIndex1 = " + q)
-    return [lat, long]
-
-def getWeather(lat, lng, woeid):
-    # We will try to see if a cached response is in the dict, if so and the timestamp matches the hour
-    # it was gotten, we will return that instead of abusing the API :)
-    try:
-      cachedResponse = woeidCache[woeid]
-      if cachedResponse:
-        if cachedResponse['timestamp'].strftime("%h") == datetime.datetime.now().strftime("%h"):
-          print("Returning cached response")
-          return cachedResponse['response']
-    except:
-      # Some error happened, go get the data from API
-      pass
-    uri = 'https://api.openweathermap.org/data/2.5/onecall'
-    querystring = {"lat": lat, "lon": lng,
-     "exclude": "alerts,minutely",
-     "units": "metric",
-     "appid": owmkey}
-    response = (requests.request("GET", uri, params=querystring)).json()
-    if response:
-      # If woeid in cache, we replace, if not we add, easy!
-      if woeid not in woeidCache:
-        woeidCache.update({woeid: {"response": response, "timestamp": datetime.datetime.now()}})
-      else:
-        woeidCache[woeid] = {woeid: {"response": response, "timestamp": datetime.datetime.now()}}
-      return response
-    # TODO, None handling lmao
-    return None
-
-# TODO what are these values
-def weatherIcon(n):
-    if n in ['01d', '01n']:
-        return 31
-    elif n in ['02d', '02n']:
-        return 33
-    elif n in ['03d', '03n', '04d', '04n']: ## Cloudy
-        return 27
-    elif n in ['09d', '09n']:
-        return 39
-    elif n in ['10d', '10n']: ## Rain
-        return 11
-    elif n in ['11d', '11n']:
-        return 37
-    elif n in ['13d', '13n']:
-        return 14
-    elif n in ['50d', '50n']:
-        return 20
-
-def weatherPoP(pop):
-  return int(float(pop)*100)
-
-def weatherDate(dt, timezone_offset):
-  currTime = time.gmtime(dt+timezone_offset)
-  return f"{str(currTime.tm_hour)}:{str(currTime.tm_min)}"
-
-def weatherSunrise(sunrise):
-  return str(datetime.datetime.fromtimestamp(sunrise).time())
-
-def weatherSunset(sunset):
-  return str(datetime.datetime.fromtimestamp(sunset).time())
-
-# My brain is big for the next 2 functions
-def dayNext(n):
-  return dateTable[(datetime.datetime.now() + datetime.timedelta(days=(n))).weekday()]
-
-def dayArray():
-  return [
-    dayNext(1),
-    dayNext(2),
-    dayNext(3),
-    dayNext(4),
-    dayNext(5),
-    dayNext(6)
-  ]
-
-# Hour relatively to OWM output
-# Hourly reported from OWM api goes like this,
-# First hour: The Start of the current hour
-# Second hour: Second hour and etc
-# So if you retrieve the hourly data on 11:58PM
-# The first hour reported would be 11:00PM
-
-def hourNext(n, currTime, timezone_offset):
-  hourTime = time.gmtime(currTime+timezone_offset)
-  return "%s:00" % str(hourTime.tm_hour+n)
-
-# Mapping OWM moon phases
-def moonPhase(phase):
-  # New Moon
-  if phase == 0 or phase == 1:
-    return 1
-  # First Quarter Moon
-  elif phase == 0.25:
-    return 7
-  # Full Moon
-  elif phase == 0.5:
-    return 0
-  # Last Quarter Moon
-  elif phase == 0.75:
-    return 19
-  # Waning Crescent
-  elif 0.75 <= phase <= 1:
-    return 21
-  # Waning Gibous
-  elif 0.50 <= phase <= 0.75:
-    return 17
-  # Waxing Gibous
-  elif 0.25 <= phase <= 0.50:
-    return 9
-  # Waxing Crescent
-  elif 0 <= phase <= 0.50:
-    return 4
-
 # Actual XMLGenerator functions
-
-def getXMLforWeatherWithYQL(yql, q):
+# Weather
+def getWeatherXMLWithYQLandQ(yql, q):
   if not "lat=" in q:
     if "limit 1" in q:
       city = yql.getWoeidName(q, nameInQuery=True)
@@ -181,8 +38,8 @@ def getXMLforWeatherWithYQL(yql, q):
   weather = getWeather(lat, lng, woeid)
   currTime = weatherDate(weather["current"]["dt"], weather["timezone_offset"])
   try:
-    sunrise = weatherSunrise(weather["current"]["sunrise"])
-    sunset = weatherSunset(weather["current"]["sunset"])
+    sunrise = weatherSunrise(weather["current"]["sunrise"], weather["timezone_offset"])
+    sunset = weatherSunset(weather["current"]["sunset"], weather["timezone_offset"])
   except:
     sunrise = "00:00AM"
     sunset = "00:00AM"
@@ -213,7 +70,7 @@ def getXMLforWeatherWithYQL(yql, q):
   <results>
     <results>
       <location city="{city}" country="" latitude="{lat}" locationID="ASXX0075" longitude="{lng}" state="" woeid="{woeid}">
-        <currently barometer="{weather['current']['pressure']}" feelsLike="{weather['current']['feels_like']}" moonfacevisible="{moonPhase(weather['daily'][0]['moon_phase'])}" moonphase="{moonPhase(weather['daily'][0]['moon_phase'])}" sunrise24="{sunrise}" sunset24="{sunset}" temp="{weather['current']['temp']}" time24="{currTime}" timezone="GMT" windChill="0" windSpeed="{weather['current']['wind_speed']}">
+        <currently barometer="{weather['current']['pressure']}" feelsLike="{weather['current']['feels_like']}" moonfacevisible="210" moonphase="210" sunrise24="{sunrise}" sunset24="{sunset}" temp="{weather['current']['temp']}" time24="{currTime}" timezone="GMT" windChill="0" windSpeed="{weather['current']['wind_speed']}">
           <condition code="{weatherIcon(weather['current']['weather'][0]['icon'])}" />
         </currently>
         <forecast>
@@ -292,7 +149,7 @@ def getXMLforWeatherWithYQL(yql, q):
   finalR = re.sub('\s+(?=<)', '', xml)
   return finalR
     
-def getXMLforWeatherWithYQLLegacy(yql, q):
+def getLegacyWeatherXMLWithYQLandQ(yql, q):
   woeid = yql.getWoeidInQuery(q, formatted=True)
   city = yql.getWoeidName(q, formatted=True)
   location = geolocator.geocode(city)
@@ -332,7 +189,7 @@ def getXMLforWeatherWithYQLLegacy(yql, q):
   finalR = re.sub('\s+(?=<)', '', xml)
   return finalR
 
-def getXMLforSearchWithYQL(yql, q):
+def getWeatherSearchXMLWithYQLandQ(yql, q):
   similarResults = yql.getSimilarName(q)
   middle = ""
   firstHalf = '''<?xml version="1.0" encoding="UTF-8"?>
@@ -358,7 +215,7 @@ def getXMLforSearchWithYQL(yql, q):
   finalR = re.sub('\s+(?=<)', '', xml)
   return finalR
 
-def getXMLforSearchWithYQLLegacy(yql, q):
+def getLegacyWeatherSearchXMLWithYQLandQ(yql, q):
   similarResults = yql.getSimilarName(q)
   middle = ""
   firstHalf = '''<?xml version="1.0" encoding="UTF-8"?><response><result><list>'''
@@ -375,6 +232,67 @@ def getXMLforSearchWithYQLLegacy(yql, q):
       case "small":
         middle += f'''<item><id>{i["woeid"]}</id><city>{i["name"]}</city><countryname>{country.name}</countryname></item>'''
   secondHalf = '''</list></result></response>'''
+  xml = firstHalf+middle+secondHalf
+  finalR = re.sub('\s+(?=<)', '', xml)
+  return finalR
+
+# Stocks
+def getStocksXMLWithQandType(q, type):
+  firstHalf = f'''<?xml version="1.0" encoding="UTF-8"?>
+          <response>
+            <result type="getchart" timestamp="{time.time()}">
+              <list count="{len(q['symbols'])}" total="{len(q['symbols'])}">'''
+  match type:
+    case "getquotes":
+      secondHalf = '''</list></result></response>'''
+      middle = ""
+      for symbol in q['symbols']:
+        sanitizedSymbol = sanitizeSymbol(symbol)
+        tickerInfo = getTickerInfo(symbol)
+        if not tickerInfo:
+          continue
+        if not "open" in tickerInfo:
+          tickerInfo['open'] = tickerInfo['regularMarketPrice']
+        if not "volume" in tickerInfo:
+          tickerInfo["volume"] = 0
+        if not "marketCap" in tickerInfo:
+          tickerInfo["marketCap"] = 0
+        if not "dividendYield" in tickerInfo:
+          tickerInfo["dividendYield"] = 0
+        middle += f'''<quote>
+                        <symbol>{sanitizedSymbol}</symbol>
+                        <open>{tickerInfo['open']}</open>
+                        <price>{tickerInfo['regularMarketPrice']}</price>
+                        <change>{tickerInfo['change']}</change>
+                        <changepercent>{tickerInfo['changepercent']}</changepercent>
+                        <marketcap>{tickerInfo['marketCap']}</marketcap>
+                        <high>{tickerInfo['regularMarketDayHigh']}</high>
+                        <low>{tickerInfo['regularMarketDayLow']}</low>
+                        <volume>{tickerInfo['volume']}</volume>
+                        <averagedailyvolume>{tickerInfo['volume24Hr']}</averagedailyvolume>
+                        <peratio>{tickerInfo['trailingPegRatio']}</peratio>
+                        <yearrange>0</yearrange>
+                        <dividendyield>{tickerInfo['dividendYield']}</dividendyield>
+                        <link>https://1pwn.ixmoe.com</link>
+                        <status>0</status>
+                      </quote>'''
+    case "getchart":
+      if not "range" in q:
+        return ""
+      secondHalf = '''</list></result></response>'''
+      tickerInfo = getTickerInfo(q['symbols'][0])
+      sanitizedSymbol = sanitizeSymbol(q['symbols'][0])
+      print(f"https://query1.finance.yahoo.com/v8/finance/chart/{sanitizedSymbol}?interval={q['range']}")
+      r = requests.get(f"https://query1.finance.yahoo.com/v8/finance/chart/{sanitizedSymbol}?interval={q['range']}")
+      # middle = f'''<point>
+      #               <timestamp>10000000</timestamp>
+      #               <close>{tickerInfo['open']}</close>
+      #               <volume>{tickerInfo['volume']}</volume>
+      #              </point>'''
+    case _:
+      print("sadge")
+      return ""
+
   xml = firstHalf+middle+secondHalf
   finalR = re.sub('\s+(?=<)', '', xml)
   return finalR

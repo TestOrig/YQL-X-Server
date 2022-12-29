@@ -1,4 +1,4 @@
-import mmap, json
+import mmap, json, threading
 
 class YQL:
     def __init__(self):
@@ -7,6 +7,7 @@ class YQL:
         self.json_mem_file = mmap.mmap(self.json_disk_file.fileno(), 0, prot=mmap.PROT_READ)
         self.json_disk_file.close()
         self.json_file = json.load(self.json_mem_file)
+        self.generatedFileLock = threading.Lock()
 
     def getWoeidInQuery(self, q, formatted=False):
         if formatted:
@@ -25,11 +26,27 @@ class YQL:
             result = self.getSimilarName(name)[0]['woeid']
             return result
         except:
-            # Generate woeid from name
-            woeid = ""
-            for letter in name:
-                woeid += str(ord(letter))
-            return woeid
+            # Generate woeid from name, store the characters in unicode int format for decoding later
+            print("Generating woeid from name, " + name)
+            with self.generatedFileLock:
+                generatedFile = open("generatedWoeids.json", "r+")
+                generatedWoeids = json.load(generatedFile)
+                woeid = ""
+                woeidArray = []
+                for letter in name:
+                        unicode = str(ord(letter))
+                        woeid += unicode
+                        woeidArray.append(unicode)
+                if not any(woeid in v for v in generatedWoeids):
+                    print("Adding woeid to generatedWoeids.json")
+                    generatedWoeids.update({woeid: woeidArray})
+                    generatedFile.seek(0)
+                    generatedFile.write(json.dumps(generatedWoeids))
+                    generatedFile.truncate()
+                else:
+                    print("Woeid already in generatedWoeids.json")
+                generatedFile.close()
+                return woeid
 
     def getWoeidName(self, q, formatted=False, nameInQuery=False):
         if not nameInQuery:
@@ -37,7 +54,15 @@ class YQL:
         else:
             print(q[q.find("query='")+7:q.find(", ")])
             return q[q.find("query='")+7:q.find(", ")]
-        ret = self.json_file["woeid"][woeid]
+        try:
+            ret = self.json_file["woeid"][woeid]
+        except:
+            generatedFile = open("generatedWoeids.json", "r")
+            generatedWoeids = json.load(generatedFile)
+            name = ""
+            for unicodeChar in generatedWoeids[woeid]:
+                name += chr(int(unicodeChar))
+            ret = name
         return(ret)
        
     def getSimilarName(self, q):
