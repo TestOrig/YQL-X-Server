@@ -17,22 +17,30 @@ def hello_world():
 # Stocks
 @app.route('/dgw', methods=["POST"])
 def dgw():
+    print("Legacy app found!")
     sentXML = request.data.decode()
     root = ElementTree.fromstring(sentXML)
     type = root[0].attrib['type']
-    q = parseQuery(sentXML)
-    return XMLGenerator.getStocksXMLWithQandType(q, type)
+    api = root.attrib['api']
+    print(sentXML)
+    if api == "finance":
+        print("Using finance")
+        q = parseQuery(sentXML)
+        return XMLGenerator.getStocksXMLWithQandType(q, type)
+    elif api == 'weather':
+        print("Using Weather")
+        return legacyWeatherDGW()
 
 # Weather
 
 # iOS 5 seems to use this endpoint, let's redirect to the regular function
 @app.route('/v1/yql')
-def legacyyql(): 
+def legacyWeatherYQL(): 
     print("Legacy app found!")
     return weatherEndpoint()
 
 @app.route('/yql/weather/dgw', methods=["POST"])
-def legacydgw():
+def legacyWeatherDGW():
     print("Pre iOS 5 app found!")
     if request.data:
         sentXML = request.data.decode()
@@ -70,6 +78,8 @@ def searchReq(q):
     return XMLGenerator.getWeatherSearchXMLWithYQLandQ(yql, q)
 
 def weatherReq(q):
+    if "lat=" in q:
+        return XMLGenerator.getWeatherXMLWithYQLandLatLonginQ(yql, q)
     return XMLGenerator.getWeatherXMLWithYQLandQ(yql, q)
 
 if __name__ == '__main__':
