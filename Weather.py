@@ -4,8 +4,7 @@ import datetime
 import time
 
 ## FILL THIS IN WITH YOUR OPENWEATHERMAP API KEY 
-#owmkey = sys.argv[1]
-owmkey = "b4f215ca39fba72abf5e8b413859f1dd"
+owmkey = sys.argv[1]
 
 # This dictionary contains woeids and data for caching along with timestamps
 woeidCache = {}
@@ -62,31 +61,74 @@ def getWeather(lat, lng, woeid):
     # TODO, None handling lmao
     return None
 
-# TODO what are these values
-def weatherIcon(n):
-    if n in ['01d', '01n']:
-        return 31
-    elif n in ['02d', '02n']:
-        return 33
-    elif n in ['03d', '03n', '04d', '04n']: ## Cloudy
-        return 27
-    elif n in ['09d', '09n']:
-        return 39
-    elif n in ['10d', '10n']: ## Rain
-        return 11
-    elif n in ['11d', '11n']:
-        return 37
-    elif n in ['13d', '13n']:
-        return 14
-    elif n in ['50d', '50n']:
-        return 20
+## TODO what are these values
+# they automatically choose between night and day variants of the big icon
+# 0 = lightning
+# 6 = rain&snow
+# 9 = rain&clouds
+# 11 = rain
+# 13 = flurries
+# 15 = snow
+# 17 = hail
+# 19 = sun&haze
+# 23 = haze
+# 25 = ice
+# 27 = Clouds/Cloudy
+# 29 = moon&partlycloudy
+# 30 = sun&partlycloudy
+# 31 = moon
+# 32 = sun
+# 33 = suncloud
+# 35 = rain&snow
+# 37 = sun&lightning
+# 39 = sun&rain
+# 42 = ice&snow
+# 44 = sun&partlycloudy
+# 46 = ice&snow
+# 48 =
+def weatherIcon(id):
+  id = str(id)
+  if id[0] == "2": # Thunderstorm
+    return 0
+  if id[0] == "3": # Drizzle 
+    return 11
+  if id[0] == "5": # Rain
+    if not id[1] == "0": # Cloudy rain/Stormy
+      return 9
+    return 11
+  if id[0] == "6": # Snow
+    if id == "600": # Light snow
+      return 13
+    if id == "601" or id == "602": # Snowing
+      return 15
+    if id == "613" or id == "615" or id == "616": # Rain and snow
+      return 35
+    return 15
+  if id[0] == "7": # Atmospheric Conditions
+    if id == "701" or id == "721" or id == "741" or id == "711": # Mist/Haze/Fog/Smoke
+      return 23
+    return 23 # TODO change me
+  if id[0] == "8": # Cloud Conditions
+    if id == "800": # Clear sky
+      return 32
+    if id == "801" or id == "802" or id == "803": # Partly cloudy
+      return 33
+    if id == "804":
+      return 27
+  if id[0] == "9": # Extreme conditions
+    if id[3] == "3": # COLD
+      return 25
+    if id[3] == "4": # HOT
+      return 19
+    if id[3] == "6": # HAIL
+      return 17
 
 def weatherPoP(pop):
   return int(float(pop)*100)
 
 def weatherDate(dt, timezone_offset):
   currTime = time.gmtime(dt+timezone_offset)
-  return str(datetime.datetime.fromtimestamp(dt).time())
+  #return str(datetime.datetime.fromtimestamp(dt).time().strftime("%H:%M"))
   return f"{str(currTime.tm_hour)}:{str(currTime.tm_min)}"
 
 def weatherSunrise(sunrise, timezone_offset):
@@ -126,25 +168,25 @@ def hourNext(n, currTime, timezone_offset):
 def moonPhase(phase):
   # New Moon
   if phase == 0 or phase == 1:
-    return 1
+    return [0, 0]
   # First Quarter Moon
   elif phase == 0.25:
-    return 7
+    return [64, 1]
   # Full Moon
   elif phase == 0.5:
-    return 0
+    return [108, 5]
   # Last Quarter Moon
   elif phase == 0.75:
-    return 19
+    return [47, 5]
   # Waning Crescent
   elif 0.75 <= phase <= 1:
-    return 21
+    return [16, 5]
   # Waning Gibous
   elif 0.50 <= phase <= 0.75:
-    return 17
+    return [72, 5]
   # Waxing Gibous
   elif 0.25 <= phase <= 0.50:
-    return 9
+    return [84, 1]
   # Waxing Crescent
-  elif 0 <= phase <= 0.50:
-    return 4
+  elif 0 <= phase <= 0.25:
+    return [32, 1]
