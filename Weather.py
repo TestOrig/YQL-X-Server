@@ -61,8 +61,13 @@ def getWeather(lat, lng, woeid):
     # TODO, None handling lmao
     return None
 
-## TODO what are these values
-# they automatically choose between night and day variants of the big icon
+def dayOrNight(sunset):
+  if (time.time() / 1000 < sunset):
+    return True
+  else:
+    return False
+
+##
 # 0 = lightning
 # 6 = rain&snow
 # 9 = rain&clouds
@@ -78,7 +83,8 @@ def getWeather(lat, lng, woeid):
 # 30 = sun&partlycloudy
 # 31 = moon
 # 32 = sun
-# 33 = suncloud
+# 33 = mooncloud
+# 34 = suncloud
 # 35 = rain&snow
 # 37 = sun&lightning
 # 39 = sun&rain
@@ -86,7 +92,8 @@ def getWeather(lat, lng, woeid):
 # 44 = sun&partlycloudy
 # 46 = ice&snow
 # 48 =
-def weatherIcon(id):
+def weatherIcon(id, sunset):
+  day = dayOrNight(sunset)
   id = str(id)
   if id[0] == "2": # Thunderstorm
     return 0
@@ -112,7 +119,10 @@ def weatherIcon(id):
     if id == "800": # Clear sky
       return 32
     if id == "801" or id == "802" or id == "803": # Partly cloudy
-      return 33
+      if day:
+        return 34
+      else:
+        return 33
     if id == "804":
       return 27
   if id[0] == "9": # Extreme conditions
