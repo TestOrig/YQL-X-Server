@@ -1,10 +1,13 @@
-import mmap, json, threading, re
+import mmap, json, threading, re, os
 
 class YQL:
     def __init__(self):
         # Load json into memory
         self.json_disk_file = open("geoDatabase.json", "r")
-        self.json_mem_file = mmap.mmap(self.json_disk_file.fileno(), 0, prot=mmap.PROT_READ)
+        if os.name == 'nt':
+            self.json_mem_file = mmap.mmap(self.json_disk_file.fileno(), 0, access=mmap.ACCESS_READ)
+        else:
+            self.json_mem_file = mmap.mmap(self.json_disk_file.fileno(), 0, prot=mmap.PROT_READ)
         self.json_disk_file.close()
         self.json_file = json.load(self.json_mem_file)
         self.generatedFileLock = threading.Lock()
