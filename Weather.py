@@ -161,8 +161,8 @@ def dayArray():
 # The first hour reported would be 11:00PM
 
 def hourNext(n, currTime, timezone_offset):
-  hourTime = time.gmtime(currTime+timezone_offset)
-  return "%s:00" % str(hourTime.tm_hour+n)
+  hourTime = time.gmtime(currTime+timezone_offset+(3600*n))
+  return "%s:00" % str(hourTime.tm_hour)
 
 # Mapping OWM moon phases
 def moonPhase(phase):
