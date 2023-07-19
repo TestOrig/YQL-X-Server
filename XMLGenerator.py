@@ -1,10 +1,11 @@
 import json
 import re, time, requests
 from iso3166 import countries
-from geopy.geocoders import Nominatim
+from geopy.geocoders import Nominatim, GeoNames
 from Weather import *
 from Stocks import *
-geolocator = Nominatim(user_agent="iOSLegacyWeather")
+n_geolocator = Nominatim(user_agent="iOSLegacyWeather", timeout=10)
+m_geolocator = GeoNames("electimon")
 
 # Actual XMLGenerator functions
 # Weather
@@ -13,7 +14,10 @@ def getWeatherXMLWithYQLandLatLonginQ(yql, q):
   latlong = getLatLongForQ(q)
   lat = latlong[0]
   lng = latlong[1]
-  location = (geolocator.reverse(f"{lat}, {lng}")).raw['address']
+  try:
+    location = (m_geolocator.reverse(f"{lat}, {lng}")).raw['address']
+  except:
+    location = (n_geolocator.reverse(f"{lat}, {lng}")).raw['address']
   try:
     city = location['town']
   except:
@@ -139,7 +143,7 @@ def getWeatherXMLWithYQLandLatLonginQ(yql, q):
 def getWeatherXMLWithYQLandQ(yql, q):
   if "limit 1" in q:
     cities = yql.getNamesForWoeidsInQ(q, nameInQuery=True)
-    woeids = yql.getWoeidFromName(cities[0])
+    woeids = [yql.getWoeidFromName(cities[0])]
   else:
     cities = yql.getNamesForWoeidsInQ(q)
     woeids = yql.getWoeidsInQuery(q)
@@ -170,7 +174,10 @@ def getWeatherXMLWithYQLandQ(yql, q):
   hourlyEnd = "</results>"
   lastHalf = '''</results></query>'''
   for index, city in enumerate(cities):
-    location = geolocator.geocode(city)
+    try:
+      location = n_geolocator.geocode(city)
+    except:
+      location = m_geolocator.geocode(city)
     if not location:
       return "Failed to geocode this location"
     lat = location.latitude
@@ -275,7 +282,10 @@ def getWeatherXMLWithYQLandQ(yql, q):
 def getLegacyWeatherXMLWithYQLandQ(yql, q):
   woeid = yql.getWoeidInQuery(q, formatted=True)
   city = yql.getWoeidName(q, formatted=True)
-  location = geolocator.geocode(city)
+  try:
+    location = n_geolocator.geocode(city)
+  except:
+    location = m_geolocator.geocode(city)
   lat = location.latitude
   lng = location.longitude
     

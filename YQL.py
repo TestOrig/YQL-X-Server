@@ -14,7 +14,7 @@ class YQL:
 
     def getWoeidsInQuery(self, q, formatted=False):
         if formatted:
-            return q
+            return [q] if not isinstance(q, list) else q
         woeids = []
         for woeid in re.findall(r'\b\d+\b', q):
             if not woeid in woeids:
@@ -25,6 +25,7 @@ class YQL:
         print("Getting woeid from name, " + name)
         try:
             result = self.getSimilarName(name)[0]['woeid']
+            print("Woeid from name is " + result)
             return result
         except:
             # Generate woeid from name, store the characters in unicode int format for decoding later

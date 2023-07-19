@@ -36,15 +36,12 @@ def getLatLongForQ(q):
 def getWeather(lat, lng, woeid):
     # We will try to see if a cached response is in the dict, if so and the timestamp matches the hour
     # it was gotten, we will return that instead of abusing the API :)
-    try:
+    if woeid in woeidCache:
       cachedResponse = woeidCache[woeid]
       if cachedResponse:
-        if cachedResponse['timestamp'].strftime("%h") == datetime.datetime.now().strftime("%h"):
+        if cachedResponse['timestamp'] == datetime.datetime.now().strftime("%h"):
           print("Returning cached response")
           return cachedResponse['response']
-    except:
-      # Some error happened, go get the data from API
-      pass
     uri = 'https://api.openweathermap.org/data/2.5/onecall'
     querystring = {"lat": lat, "lon": lng,
      "exclude": "alerts,minutely",
@@ -54,9 +51,9 @@ def getWeather(lat, lng, woeid):
     if response:
       # If woeid in cache, we replace, if not we add, easy!
       if woeid not in woeidCache:
-        woeidCache.update({woeid: {"response": response, "timestamp": datetime.datetime.now()}})
+        woeidCache.update({woeid: {"response": response, "timestamp": datetime.datetime.now().strftime("%h")}})
       else:
-        woeidCache[woeid] = {woeid: {"response": response, "timestamp": datetime.datetime.now()}}
+        woeidCache[woeid] = {woeid: {"response": response, "timestamp": datetime.datetime.now().strftime("%h")}}
       return response
     # TODO, None handling lmao
     return None
