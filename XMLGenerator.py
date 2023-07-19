@@ -7,6 +7,19 @@ from Stocks import *
 n_geolocator = Nominatim(user_agent="iOSLegacyWeather", timeout=10)
 m_geolocator = GeoNames("electimon")
 
+def getCity(location):
+  if "town" in location:
+    return location['town']
+  if "region" in location:
+    return location['region']
+  if "city" in location:
+    return location['city']
+  if "village" in location:
+    return location['village']
+  if "county" in location:
+    return location['county']
+  return None
+
 # Actual XMLGenerator functions
 # Weather
 def getWeatherXMLWithYQLandLatLonginQ(yql, q):
@@ -18,13 +31,7 @@ def getWeatherXMLWithYQLandLatLonginQ(yql, q):
     location = (m_geolocator.reverse(f"{lat}, {lng}")).raw['address']
   except:
     location = (n_geolocator.reverse(f"{lat}, {lng}")).raw['address']
-  try:
-    city = location['town']
-  except:
-    try:
-      city = location['region']
-    except:
-      city = location['city']
+  city = getCity(location)
   woeid = yql.getWoeidFromName(city)   
   weather = getWeather(lat, lng, woeid)
   currTime = weatherDate(weather["current"]["dt"], weather["timezone_offset"])
