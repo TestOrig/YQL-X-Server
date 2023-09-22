@@ -1,9 +1,9 @@
-import json
-import re, time, requests
+import re, time
 from iso3166 import countries
 from geopy.geocoders import Nominatim, GeoNames
 from Weather import *
 from Stocks import *
+from Blog import *
 n_geolocator = Nominatim(user_agent="iOSLegacyWeather", timeout=10)
 m_geolocator = GeoNames("electimon")
 
@@ -32,7 +32,7 @@ def getWeatherXMLWithYQLandLatLonginQ(yql, q):
   except:
     location = (n_geolocator.reverse(f"{lat}, {lng}")).raw['address']
   city = getCity(location)
-  woeid = yql.getWoeidFromName(city)   
+  woeid = yql.getWoeidFromName(city)
   weather = getWeather(lat, lng, woeid)
   currTime = weatherDate(weather["current"]["dt"], weather["timezone_offset"])
   try:
@@ -68,7 +68,7 @@ def getWeatherXMLWithYQLandLatLonginQ(yql, q):
               <results>
                 <results>
                   <location city="{city}" country="" latitude="{lat}" locationID="ASXX0075" longitude="{lng}" state="" woeid="{woeid}">
-                    <currently barometer="{weather['current']['pressure']}" feelsLike="{weather['current']['feels_like']}" moonfacevisible="{currentDayMoonPhase[0]}" moonphase={currentDayMoonPhase[1]}" sunrise24="{sunrise}" sunset24="{sunset}" temp="{weather['current']['temp']}" time24="{currTime}" timezone="GMT" windChill="0" windSpeed="{weather['current']['wind_speed']}">
+                    <currently barometer="{weather['current']['pressure']}" feelsLike="{weather['current']['feels_like']}" moonfacevisible="{currentDayMoonPhase[0]}" moonphase="{currentDayMoonPhase[1]}" sunrise24="{sunrise}" sunset24="{sunset}" temp="{weather['current']['temp']}" time24="{currTime}" timezone="GMT" windChill="0" windSpeed="{weather['current']['wind_speed']}">
                       <condition code="{weatherIcon(weather['current']['weather'][0]['id'], weather["current"]["sunset"])}" />
                     </currently>
                     <forecast>
@@ -379,38 +379,33 @@ def getLegacyWeatherSearchXMLWithYQLandQ(yql, q):
 
 # Stocks
 def getStocksXMLWithQandType(q, type):
-  firstHalf = f'''<?xml version="1.0" encoding="UTF-8"?>
-          <response>
-            <result type="getchart" timestamp="{time.time()}">
-              <list count="{len(q['symbols'])}" total="{len(q['symbols'])}">'''
+  firstHalf = ""
+  middle = ""
   match type:
     case "getquotes":
+      firstHalf = f'''<?xml version="1.0" encoding="UTF-8"?>
+                      <response>
+                        <result type="{type}" timestamp="{time.time()}">
+                          <list count="{len(q['symbols'])}" total="{len(q['symbols'])}">'''
       secondHalf = '''</list></result></response>'''
-      middle = ""
       for symbol in q['symbols']:
         sanitizedSymbol = sanitizeSymbol(symbol)
         tickerInfo = getTickerInfo(symbol)
-        if not tickerInfo:
+        if not tickerInfo or tickerInfo["noopen"]:
           continue
-        if not "open" in tickerInfo:
-          tickerInfo['open'] = tickerInfo['regularMarketPrice']
-        if not "volume" in tickerInfo:
-          tickerInfo["volume"] = 0
-        if not "marketCap" in tickerInfo:
-          tickerInfo["marketCap"] = 0
-        if not "dividendYield" in tickerInfo:
-          tickerInfo["dividendYield"] = 0
         middle += f'''<quote>
                         <symbol>{sanitizedSymbol}</symbol>
+                        <sname>{(tickerInfo['longName'][:12] + '...') if len(tickerInfo['longName']) > 12 else tickerInfo['longName']}</sname>
                         <open>{tickerInfo['open']}</open>
-                        <price>{tickerInfo['regularMarketPrice']}</price>
-                        <change>{tickerInfo['change']}</change>
+                        <price>{tickerInfo['regularMarketOpen']}</price>
+                        <change>{tickerInfo['changepercent']}</change>
+                        <realtimechange>{tickerInfo['changepercent']}</realtimechange>
                         <changepercent>{tickerInfo['changepercent']}</changepercent>
                         <marketcap>{tickerInfo['marketCap']}</marketcap>
                         <high>{tickerInfo['regularMarketDayHigh']}</high>
                         <low>{tickerInfo['regularMarketDayLow']}</low>
                         <volume>{tickerInfo['volume']}</volume>
-                        <averagedailyvolume>{tickerInfo['volume24Hr']}</averagedailyvolume>
+                        <averagedailyvolume>{tickerInfo['averageVolume']}</averagedailyvolume>
                         <peratio>{tickerInfo['trailingPegRatio']}</peratio>
                         <yearrange>0</yearrange>
                         <dividendyield>{tickerInfo['dividendYield']}</dividendyield>
@@ -420,17 +415,41 @@ def getStocksXMLWithQandType(q, type):
     case "getchart":
       if not "range" in q:
         return ""
-      return ""
-      secondHalf = '''</list></result></response>'''
-      tickerInfo = getTickerInfo(q['symbols'][0])
       sanitizedSymbol = sanitizeSymbol(q['symbols'][0])
-      print(f"https://query1.finance.yahoo.com/v8/finance/chart/{sanitizedSymbol}?interval={q['range']}")
-      r = requests.get(f"https://query1.finance.yahoo.com/v8/finance/chart/{sanitizedSymbol}?interval={q['range']}")
-      # middle = f'''<point>
-      #               <timestamp>10000000</timestamp>
-      #               <close>{tickerInfo['open']}</close>
-      #               <volume>{tickerInfo['volume']}</volume>
-      #              </point>'''
+      tickerInfo = getTickerInfo(q['symbols'][0])
+      if not tickerInfo or tickerInfo["noopen"]:
+        return ""
+      pointData = getTickerChartForRange(sanitizedSymbol, q["range"])
+      firstHalf = f'''<?xml version="1.0" encoding="UTF-8"?>
+                      <response>
+                        <result type="{type}" timestamp="{int(time.time())}">
+                          <list count="{len(pointData)}" total="{len(pointData)}">
+                            <meta>
+                              <symbol>{sanitizedSymbol}</symbol>
+                              <marketopen>{tickerInfo['open']}</marketopen>
+                              <marketclose>{tickerInfo['previousClose']}</marketclose>
+                              <gmtoffset>-4</gmtoffset>
+                            </meta>'''
+      for point in pointData:
+        middle += f'''<point timestamp="{point['timestamp']}" close="{point['close']}" volume="{point['volume']}" />'''
+      secondHalf = '''</list></result></response>'''
+    case "getnews":
+      posts = GetBlogPosts()
+      firstHalf = f'''<?xml version="1.0" encoding="UTF-8"?>
+                      <feed>
+                        <list count="{len(posts)+1}" total="{len(posts)+1}">'''
+      secondHalf = '''</list></feed>'''
+      for post in posts:
+        middle += f'''<item id="{post['published']}">
+                       <title>{post['title']}</title>
+                       <timestamp>{post['published']}</timestamp>
+                       <link>{post['link']}</link>
+                      </item>'''
+      middle += f'''<item id="0000">
+                      <title>Hey, thank you for using StockX!</title>
+                      <timestamp>1695013355</timestamp>
+                      <link>https://1pwn.ixmoe.com</link>
+                    </item>'''
     case _:
       print("sadge")
       return ""

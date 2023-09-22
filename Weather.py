@@ -2,12 +2,13 @@ import sys
 import requests
 import datetime
 import time
+from cachetools import TTLCache
 
-## FILL THIS IN WITH YOUR OPENWEATHERMAP API KEY 
+## FILL THIS IN WITH YOUR OPENWEATHERMAP API KEY
 owmkey = sys.argv[1]
 
-# This dictionary contains woeids and data for caching along with timestamps
-woeidCache = {}
+# Initialize a cache with a time-to-live (TTL) of 1 hour (3600 seconds)
+woeidCache = TTLCache(maxsize=100, ttl=3600)
 
 dateTable = {
   0: 1,
@@ -34,14 +35,13 @@ def getLatLongForQ(q):
     return [lat, long]
 
 def getWeather(lat, lng, woeid):
-    # We will try to see if a cached response is in the dict, if so and the timestamp matches the hour
-    # it was gotten, we will return that instead of abusing the API :)
+    # We will try to see if a cached response is in the cache, if so and the timestamp matches
+    # we will return that instead of abusing the API :)
     if woeid in woeidCache:
-      cachedResponse = woeidCache[woeid]
-      if cachedResponse:
-        if cachedResponse['timestamp'] == datetime.datetime.now().strftime("%h"):
-          print("Returning cached response")
-          return cachedResponse['response']
+        cachedResponse = woeidCache[woeid]
+        if cachedResponse['timestamp'] == datetime.datetime.now().strftime("%Y-%m-%d %H"):
+            print("Returning cached response")
+            return cachedResponse['response']
     uri = 'https://api.openweathermap.org/data/2.5/onecall'
     querystring = {"lat": lat, "lon": lng,
      "exclude": "alerts,minutely",
@@ -49,11 +49,10 @@ def getWeather(lat, lng, woeid):
      "appid": owmkey}
     response = (requests.request("GET", uri, params=querystring)).json()
     if response:
-      # If woeid in cache, we replace, if not we add, easy!
-      if woeid not in woeidCache:
-        woeidCache.update({woeid: {"response": response, "timestamp": datetime.datetime.now().strftime("%h")}})
-      else:
-        woeidCache[woeid] = {woeid: {"response": response, "timestamp": datetime.datetime.now().strftime("%h")}}
+      woeidCache[woeid] = {
+          "response": response,
+          "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H")
+      }
       return response
     # TODO, None handling lmao
     return None

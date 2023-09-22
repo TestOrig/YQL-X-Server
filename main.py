@@ -15,9 +15,11 @@ def hello_world():
     return "Sup"
 
 # Stocks
-@app.route('/dgw', methods=["POST"])
+@app.route('/dgw', methods=["POST", "GET"])
 def dgw():
     print("Legacy app found!")
+    if request.method == 'GET':
+        return "ok", 200
     sentXML = request.data.decode()
     root = ElementTree.fromstring(sentXML)
     type = root[0].attrib['type']
