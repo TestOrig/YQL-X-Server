@@ -1,9 +1,11 @@
 import re, time
+import sys
 from iso3166 import countries
 from geopy.geocoders import Nominatim, GeoNames
 from Weather import *
 from Stocks import *
 from Blog import *
+from datetime import datetime
 n_geolocator = Nominatim(user_agent="iOSLegacyWeather", timeout=10)
 m_geolocator = GeoNames("electimon")
 
@@ -20,8 +22,23 @@ def getCity(location):
     return location['county']
   return None
 
-# Actual XMLGenerator functions
-# Weather
+def format_time_24h(time_str):
+    # Check if the time string contains AM or PM
+    if 'AM' in time_str or 'PM' in time_str:
+        # If it does, parse it as a 12-hour format with AM/PM
+        time = datetime.strptime(time_str, "%I:%M%p")
+    else:
+        # Otherwise, parse it as a 24-hour format without AM/PM
+        time = datetime.strptime(time_str, "%H:%M")
+    # Format the time string into 24-hour format with leading zeros
+    return time.strftime("%H:%M")
+
+def format_time_12h(time_str):
+    # Assuming that the input string is in 24-hour format, we'll parse it accordingly
+    time = datetime.strptime(time_str, "%H:%M")
+    # Format the time string into 12-hour format with a space before AM/PM
+    return time.strftime("%I:%M %p")
+
 def getWeatherXMLWithYQLandLatLonginQ(yql, q):
   # Handle Lat and Long in query
   latlong = getLatLongForQ(q)
@@ -46,6 +63,21 @@ def getWeatherXMLWithYQLandLatLonginQ(yql, q):
   print("sunset = "+ sunset)
   days = dayArray()
   currentDayMoonPhase = moonPhase(float(weather['daily'][0]['moon_phase']))
+  try:
+    sunrise_24h = format_time_24h(sunrise)
+    sunset_24h = format_time_24h(sunset)
+    sunrise_12h = format_time_12h(sunrise_24h)
+    sunset_12h = format_time_12h(sunset_24h)
+
+    # Formatting current time for 24-hour and 12-hour
+    current_time_24h = format_time_24h(currTime)
+    current_time_12h = format_time_12h(current_time_24h)
+  except Exception as e:
+    print(f"Error converting time formats (first function): {e}")
+    sunrise_12h = "00:00 AM"
+    sunset_12h = "00:00 AM"
+    sys.exit(1)
+
   # Formatted for your viewing needs
   xml = f'''<?xml version="1.0" encoding="UTF-8"?>
             <query xmlns:yahoo="http://www.yahooapis.com/v1/base.rng" yahoo:count="2" yahoo:created="2012-10-30T11:36:42Z" yahoo:lang="en-US">
@@ -68,10 +100,10 @@ def getWeatherXMLWithYQLandLatLonginQ(yql, q):
               <results>
                 <results>
                   <location city="{city}" country="" latitude="{lat}" locationID="ASXX0075" longitude="{lng}" state="" woeid="{woeid}">
-                    <currently barometer="{weather['current']['pressure']}" feelsLike="{weather['current']['feels_like']}" moonfacevisible="{currentDayMoonPhase[0]}" moonphase="{currentDayMoonPhase[1]}" sunrise24="{sunrise}" sunset24="{sunset}" temp="{weather['current']['temp']}" time24="{currTime}" timezone="GMT" windChill="0" windSpeed="{weather['current']['wind_speed']}">
+                    <currently barometer="{weather['current']['pressure']}" barometricTrend="" dewpoint="{weather['current']['dew_point']}" feelsLike="{weather['current']['feels_like']}" heatIndex="{weather['current']['feels_like']}" moonfacevisible="{currentDayMoonPhase[0]}%" moonphase="{currentDayMoonPhase[1]}" percentHumidity="{weather['current']['humidity']}" sunrise="{sunrise_12h}" sunrise24="{sunrise_24h}" sunset="{sunset_12h}" sunset24="{sunset_24h}" temp="{weather['current']['temp']}" tempBgcolor="" time="{current_time_12h}" time24="{current_time_24h}" timezone="GMT+{weather['timezone_offset'] // 3600}" tz="CET" visibility="{weather['current']['visibility'] / 1000}" windChill="{weather['current']['feels_like']}" windDirection="" windDirectionDegree="{weather['current']['wind_deg']}" windSpeed="{weather['current']['wind_speed']}">
                       <condition code="{weatherIcon(weather['current']['weather'][0]['id'], weather["current"]["sunset"])}" />
                     </currently>
-                    <forecast>
+		    <forecast>
                       <day dayOfWeek="{days[0]}" poP="{weatherPoP(weather['daily'][0]["pop"])}">
                         <temp high="{weather['daily'][0]['temp']['max']}" low="{round(float(weather['daily'][0]['temp']['min']))}" />
                         <condition code="{weatherIcon(weather['daily'][0]['weather'][0]['id'], weather["current"]["sunset"])}" />
@@ -207,9 +239,28 @@ def getWeatherXMLWithYQLandQ(yql, q):
     print("currTime = " + currTime)
     print("sunrise = " + sunrise)
     print("sunset = "+ sunset)
+    try:
+      sunrise_24h = format_time_24h(sunrise)
+      sunset_24h = format_time_24h(sunset)
+      sunrise_12h = format_time_12h(sunrise_24h)
+      sunset_12h = format_time_12h(sunset_24h)
+
+    # Formatting current time for 24-hour and 12-hour
+      current_time_24h = format_time_24h(currTime)
+      current_time_12h = format_time_12h(current_time_24h)
+    except Exception as e:
+      print(f"Error converting time formats: {e}")
+      sunrise_12h = "00:00 AM"
+      sunset_12h = "00:00 PM"
+      sunrise_24h = "00:00"
+      sunset_24h = "00:00"
+      current_time_24h = "00:00"
+      current_time_12h = "00:00 AM"
+
+	    
     forecastMiddle += f'''
                     <location city="{city}" country="" latitude="{lat}" locationID="ASXX0075" longitude="{lng}" state="" woeid="{woeids[index]}">
-                      <currently barometer="{weather['current']['pressure']}" feelsLike="{weather['current']['feels_like']}" moonfacevisible="{currentDayMoonPhase[0]}" moonphase="{currentDayMoonPhase[1]}" sunrise24="{sunrise}" sunset24="{sunset}" temp="{weather['current']['temp']}" time24="{currTime}" timezone="GMT" windChill="0" windSpeed="{weather['current']['wind_speed']}">
+                      <currently barometer="{weather['current']['pressure']}" barometricTrend="" dewpoint="{weather['current']['dew_point']}" feelsLike="{weather['current']['feels_like']}" heatIndex="{weather['current']['feels_like']}" moonfacevisible="{currentDayMoonPhase[0]}%" moonphase="{currentDayMoonPhase[1]}" percentHumidity="{weather['current']['humidity']}" sunrise="{sunrise_12h}" sunrise24="{sunrise_24h}" sunset="{sunset_12h}" sunset24="{sunset_24h}" temp="{weather['current']['temp']}" tempBgcolor="" time="{current_time_12h}" time24="{current_time_24h}" timezone="GMT+{weather['timezone_offset'] // 3600}" tz="CET" visibility="{weather['current']['visibility'] / 1000}" windChill="{weather['current']['feels_like']}" windDirection="" windDirectionDegree="{weather['current']['wind_deg']}" windSpeed="{weather['current']['wind_speed']}">
                         <condition code="{weatherIcon(weather['current']['weather'][0]['id'], weather["current"]["sunset"])}" />
                       </currently>
                       <forecast>
