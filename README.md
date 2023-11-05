@@ -10,3 +10,8 @@ The database is used for WOEID mapping as Yahoo's servers are gone.
 Just run main.py and point your weather client to your IP:5002.
 
 Beware, geoDatabase.json is typically around 200MB and it is loaded into RAM for performance reasons!
+
+## Credits
+@electimon I made the stupid thing
+
+@ObscureMosquito he fixed numerous bugs I appreicate it!!!
