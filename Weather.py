@@ -102,24 +102,25 @@ def dayOrNight(timestamp):
 # 44 = sun&partlycloudy
 # 46 = ice&snow
 # 48 =
+
 def weatherIcon(id, sunset, timestamp=None):  # timestamp is optional now
     day = True if timestamp is None else dayOrNight(timestamp)
     id = str(id)
     if id.startswith("2"):  # Thunderstorm
-        return 37 if day else 0  # Sun & lightning if day, else lightning
+        return 0  # Lightning
     if id.startswith("3"):  # Drizzle
         return 9
     if id.startswith("5"):  # Rain
         if id == "500":  # Light rain
-            return 39 if day else 11
+            return 39 if day else 9
         if id == "501":  # Moderate rain
-            return 39 if day else 11
+            return 11
         if id in ["502", "503", "504"]:  # Heavy intensity rain
-            return 9
+            return 11
         if id == "511":  # Freezing rain
             return 25
         if id.startswith("52"):  # Shower rain
-            return 9
+            return 11
     if id.startswith("6"):  # Snow
         if id in ["600", "620"]:  # Light snow
             return 13
