@@ -134,44 +134,44 @@ def getWeatherXMLWithYQLandLatLonginQ(yql, q):
                 </results>
                 <results>
                   <location woeid="{woeid}">
-                    <hourlyforecast>
-                      <hour time24="{hourNext(0, weather["current"]["dt"], weather["timezone_offset"])}">
-                        <condition code="{weatherIcon(weather['hourly'][0]['weather'][0]['id'], weather["current"]["sunset"])}" poP="{weatherPoP(weather['hourly'][0]['pop'])}" temp="{weather['hourly'][0]['temp']}" />
-                      </hour>
-                      <hour time24="{hourNext(1, weather["current"]["dt"], weather["timezone_offset"])}">
-                        <condition code="{weatherIcon(weather['hourly'][1]['weather'][0]['id'], weather["current"]["sunset"])}" poP="{weatherPoP(weather['hourly'][1]['pop'])}" temp="{weather['hourly'][1]['temp']}" />
-                      </hour>
-                      <hour time24="{hourNext(2, weather["current"]["dt"], weather["timezone_offset"])}">
-                        <condition code="{weatherIcon(weather['hourly'][2]['weather'][0]['id'], weather["current"]["sunset"])}" poP="{weatherPoP(weather['hourly'][2]['pop'])}" temp="{weather['hourly'][2]['temp']}" />
-                      </hour>
-                      <hour time24="{hourNext(3, weather["current"]["dt"], weather["timezone_offset"])}">
-                        <condition code="{weatherIcon(weather['hourly'][3]['weather'][0]['id'], weather["current"]["sunset"])}" poP="{weatherPoP(weather['hourly'][3]['pop'])}" temp="{weather['hourly'][3]['temp']}" />
-                      </hour>
-                      <hour time24="{hourNext(4, weather["current"]["dt"], weather["timezone_offset"])}">
-                        <condition code="{weatherIcon(weather['hourly'][4]['weather'][0]['id'], weather["current"]["sunset"])}" poP="{weatherPoP(weather['hourly'][4]['pop'])}" temp="{weather['hourly'][4]['temp']}" />
-                      </hour>
-                      <hour time24="{hourNext(5, weather["current"]["dt"], weather["timezone_offset"])}">
-                        <condition code="{weatherIcon(weather['hourly'][5]['weather'][0]['id'], weather["current"]["sunset"])}" poP="{weatherPoP(weather['hourly'][5]['pop'])}" temp="{weather['hourly'][5]['temp']}" />
-                      </hour>
-                      <hour time24="{hourNext(6, weather["current"]["dt"], weather["timezone_offset"])}">
-                        <condition code="{weatherIcon(weather['hourly'][6]['weather'][0]['id'], weather["current"]["sunset"])}" poP="{weatherPoP(weather['hourly'][6]['pop'])}" temp="{weather['hourly'][6]['temp']}" />
-                      </hour>
-                      <hour time24="{hourNext(7, weather["current"]["dt"], weather["timezone_offset"])}">
-                        <condition code="{weatherIcon(weather['hourly'][7]['weather'][0]['id'], weather["current"]["sunset"])}" poP="{weatherPoP(weather['hourly'][7]['pop'])}" temp="{weather['hourly'][7]['temp']}" />
-                      </hour>
-                      <hour time24="{hourNext(8, weather["current"]["dt"], weather["timezone_offset"])}">
-                        <condition code="{weatherIcon(weather['hourly'][8]['weather'][0]['id'], weather["current"]["sunset"])}" poP="{weatherPoP(weather['hourly'][8]['pop'])}" temp="{weather['hourly'][8]['temp']}" />
-                      </hour>
-                      <hour time24="{hourNext(9, weather["current"]["dt"], weather["timezone_offset"])}">
-                        <condition code="{weatherIcon(weather['hourly'][9]['weather'][0]['id'], weather["current"]["sunset"])}" poP="{weatherPoP(weather['hourly'][9]['pop'])}" temp="{weather['hourly'][9]['temp']}" />
-                      </hour>
-                      <hour time24="{hourNext(10, weather["current"]["dt"], weather["timezone_offset"])}">
-                        <condition code="{weatherIcon(weather['hourly'][10]['weather'][0]['id'], weather["current"]["sunset"])}" poP="{weatherPoP(weather['hourly'][10]['pop'])}" temp="{weather['hourly'][10]['temp']}" />
-                      </hour>
-                      <hour time24="{hourNext(11, weather["current"]["dt"], weather["timezone_offset"])}">
-                        <condition code="{weatherIcon(weather['hourly'][11]['weather'][0]['id'], weather["current"]["sunset"])}" poP="{weatherPoP(weather['hourly'][11]['pop'])}" temp="{weather['hourly'][11]['temp']}" />
-                      </hour>
-                    </hourlyforecast>
+		   <hourlyforecast>
+		    <hour time24="{hourNext(0, weather['current']['dt'], weather['timezone_offset'])}">
+   		     <condition code="{weatherIcon(weather['hourly'][0]['weather'][0]['id'], weather['current']['sunset'], weather['hourly'][0]['dt'])}" poP="{weatherPoP(weather['hourly'][0]['pop'])}" temp="{weather['hourly'][0]['temp']}" />
+  		      </hour>
+ 			 <hour time24="{hourNext(1, weather['current']['dt'], weather['timezone_offset'])}">
+   			 <condition code="{weatherIcon(weather['hourly'][1]['weather'][0]['id'], weather['current']['sunset'], weather['hourly'][1]['dt'])}" poP="{weatherPoP(weather['hourly'][1]['pop'])}" temp="{weather['hourly'][1]['temp']}" />
+ 		       </hour>
+ 			 <hour time24="{hourNext(2, weather['current']['dt'], weather['timezone_offset'])}">
+  			  <condition code="{weatherIcon(weather['hourly'][2]['weather'][0]['id'], weather['current']['sunset'], weather['hourly'][2]['dt'])}" poP="{weatherPoP(weather['hourly'][2]['pop'])}" temp="{weather['hourly'][2]['temp']}" />
+  		       </hour>
+  			<hour time24="{hourNext(3, weather['current']['dt'], weather['timezone_offset'])}">
+  			  <condition code="{weatherIcon(weather['hourly'][3]['weather'][0]['id'], weather['current']['sunset'], weather['hourly'][3]['dt'])}" poP="{weatherPoP(weather['hourly'][3]['pop'])}" temp="{weather['hourly'][3]['temp']}" />
+ 		       </hour>
+  			<hour time24="{hourNext(4, weather['current']['dt'], weather['timezone_offset'])}">
+  			  <condition code="{weatherIcon(weather['hourly'][4]['weather'][0]['id'], weather['current']['sunset'], weather['hourly'][4]['dt'])}" poP="{weatherPoP(weather['hourly'][4]['pop'])}" temp="{weather['hourly'][4]['temp']}" />
+ 		       </hour>
+ 			 <hour time24="{hourNext(5, weather['current']['dt'], weather['timezone_offset'])}">
+   			 <condition code="{weatherIcon(weather['hourly'][5]['weather'][0]['id'], weather['current']['sunset'], weather['hourly'][5]['dt'])}" poP="{weatherPoP(weather['hourly'][5]['pop'])}" temp="{weather['hourly'][5]['temp']}" />
+ 		       </hour>
+			  <hour time24="{hourNext(6, weather['current']['dt'], weather['timezone_offset'])}">
+  			  <condition code="{weatherIcon(weather['hourly'][6]['weather'][0]['id'], weather['current']['sunset'], weather['hourly'][6]['dt'])}" poP="{weatherPoP(weather['hourly'][6]['pop'])}" temp="{weather['hourly'][6]['temp']}" />
+		       </hour>
+			  <hour time24="{hourNext(7, weather['current']['dt'], weather['timezone_offset'])}">
+   			 <condition code="{weatherIcon(weather['hourly'][7]['weather'][0]['id'], weather['current']['sunset'], weather['hourly'][7]['dt'])}" poP="{weatherPoP(weather['hourly'][7]['pop'])}" temp="{weather['hourly'][7]['temp']}" />
+		       </hour>
+			  <hour time24="{hourNext(8, weather['current']['dt'], weather['timezone_offset'])}">
+			    <condition code="{weatherIcon(weather['hourly'][8]['weather'][0]['id'], weather['current']['sunset'], weather['hourly'][8]['dt'])}" poP="{weatherPoP(weather['hourly'][8]['pop'])}" temp="{weather['hourly'][8]['temp']}" />
+		       </hour>
+			  <hour time24="{hourNext(9, weather['current']['dt'], weather['timezone_offset'])}">
+ 			   <condition code="{weatherIcon(weather['hourly'][9]['weather'][0]['id'], weather['current']['sunset'], weather['hourly'][9]['dt'])}" poP="{weatherPoP(weather['hourly'][9]['pop'])}" temp="{weather['hourly'][9]['temp']}" />
+ 		       </hour>
+			  <hour time24="{hourNext(10, weather['current']['dt'], weather['timezone_offset'])}">
+  			  <condition code="{weatherIcon(weather['hourly'][10]['weather'][0]['id'], weather['current']['sunset'], weather['hourly'][10]['dt'])}" poP="{weatherPoP(weather['hourly'][10]['pop'])}" temp="{weather['hourly'][10]['temp']}" />
+ 		       </hour>
+ 			 <hour time24="{hourNext(11, weather['current']['dt'], weather['timezone_offset'])}">
+   			 <condition code="{weatherIcon(weather['hourly'][11]['weather'][0]['id'], weather['current']['sunset'], weather['hourly'][11]['dt'])}" poP="{weatherPoP(weather['hourly'][11]['pop'])}" temp="{weather['hourly'][11]['temp']}" />
+ 		       </hour>
+		   </hourlyforecast>
                   </location>
                 </results>
               </results>
@@ -294,43 +294,43 @@ def getWeatherXMLWithYQLandQ(yql, q):
                   '''
     hourlyMiddle +=  f'''<location woeid="{woeids[index]}">
                           <hourlyforecast>
-                            <hour time24="{hourNext(0, weather["current"]["dt"], weather["timezone_offset"])}">
-                              <condition code="{weatherIcon(weather['hourly'][0]['weather'][0]['id'], weather["current"]["sunset"])}" poP="{weatherPoP(weather['hourly'][0]['pop'])}" temp="{weather['hourly'][0]['temp']}" />
-                            </hour>
-                            <hour time24="{hourNext(1, weather["current"]["dt"], weather["timezone_offset"])}">
-                              <condition code="{weatherIcon(weather['hourly'][1]['weather'][0]['id'], weather["current"]["sunset"])}" poP="{weatherPoP(weather['hourly'][1]['pop'])}" temp="{weather['hourly'][1]['temp']}" />
-                            </hour>
-                            <hour time24="{hourNext(2, weather["current"]["dt"], weather["timezone_offset"])}">
-                              <condition code="{weatherIcon(weather['hourly'][2]['weather'][0]['id'], weather["current"]["sunset"])}" poP="{weatherPoP(weather['hourly'][2]['pop'])}" temp="{weather['hourly'][2]['temp']}" />
-                            </hour>
-                            <hour time24="{hourNext(3, weather["current"]["dt"], weather["timezone_offset"])}">
-                              <condition code="{weatherIcon(weather['hourly'][3]['weather'][0]['id'], weather["current"]["sunset"])}" poP="{weatherPoP(weather['hourly'][3]['pop'])}" temp="{weather['hourly'][3]['temp']}" />
-                            </hour>
-                            <hour time24="{hourNext(4, weather["current"]["dt"], weather["timezone_offset"])}">
-                              <condition code="{weatherIcon(weather['hourly'][4]['weather'][0]['id'], weather["current"]["sunset"])}" poP="{weatherPoP(weather['hourly'][4]['pop'])}" temp="{weather['hourly'][4]['temp']}" />
-                            </hour>
-                            <hour time24="{hourNext(5, weather["current"]["dt"], weather["timezone_offset"])}">
-                              <condition code="{weatherIcon(weather['hourly'][5]['weather'][0]['id'], weather["current"]["sunset"])}" poP="{weatherPoP(weather['hourly'][5]['pop'])}" temp="{weather['hourly'][5]['temp']}" />
-                            </hour>
-                            <hour time24="{hourNext(6, weather["current"]["dt"], weather["timezone_offset"])}">
-                              <condition code="{weatherIcon(weather['hourly'][6]['weather'][0]['id'], weather["current"]["sunset"])}" poP="{weatherPoP(weather['hourly'][6]['pop'])}" temp="{weather['hourly'][6]['temp']}" />
-                            </hour>
-                            <hour time24="{hourNext(7, weather["current"]["dt"], weather["timezone_offset"])}">
-                              <condition code="{weatherIcon(weather['hourly'][7]['weather'][0]['id'], weather["current"]["sunset"])}" poP="{weatherPoP(weather['hourly'][7]['pop'])}" temp="{weather['hourly'][7]['temp']}" />
-                            </hour>
-                            <hour time24="{hourNext(8, weather["current"]["dt"], weather["timezone_offset"])}">
-                              <condition code="{weatherIcon(weather['hourly'][8]['weather'][0]['id'], weather["current"]["sunset"])}" poP="{weatherPoP(weather['hourly'][8]['pop'])}" temp="{weather['hourly'][8]['temp']}" />
-                            </hour>
-                            <hour time24="{hourNext(9, weather["current"]["dt"], weather["timezone_offset"])}">
-                              <condition code="{weatherIcon(weather['hourly'][9]['weather'][0]['id'], weather["current"]["sunset"])}" poP="{weatherPoP(weather['hourly'][9]['pop'])}" temp="{weather['hourly'][9]['temp']}" />
-                            </hour>
-                            <hour time24="{hourNext(10, weather["current"]["dt"], weather["timezone_offset"])}">
-                              <condition code="{weatherIcon(weather['hourly'][10]['weather'][0]['id'], weather["current"]["sunset"])}" poP="{weatherPoP(weather['hourly'][10]['pop'])}" temp="{weather['hourly'][10]['temp']}" />
-                            </hour>
-                            <hour time24="{hourNext(11, weather["current"]["dt"], weather["timezone_offset"])}">
-                              <condition code="{weatherIcon(weather['hourly'][11]['weather'][0]['id'], weather["current"]["sunset"])}" poP="{weatherPoP(weather['hourly'][11]['pop'])}" temp="{weather['hourly'][11]['temp']}" />
-                            </hour>
-                          </hourlyforecast>
+  			<hour time24="{hourNext(0, weather['current']['dt'], weather['timezone_offset'])}">
+  			  <condition code="{weatherIcon(weather['hourly'][0]['weather'][0]['id'], weather['current']['sunset'], weather['hourly'][0]['dt'])}" poP="{weatherPoP(weather['hourly'][0]['pop'])}" temp="{weather['hourly'][0]['temp']}" />
+ 			 </hour>
+  			<hour time24="{hourNext(1, weather['current']['dt'], weather['timezone_offset'])}">
+   			 <condition code="{weatherIcon(weather['hourly'][1]['weather'][0]['id'], weather['current']['sunset'], weather['hourly'][1]['dt'])}" poP="{weatherPoP(weather['hourly'][1]['pop'])}" temp="{weather['hourly'][1]['temp']}" />
+ 			 </hour>
+			  <hour time24="{hourNext(2, weather['current']['dt'], weather['timezone_offset'])}">
+    			<condition code="{weatherIcon(weather['hourly'][2]['weather'][0]['id'], weather['current']['sunset'], weather['hourly'][2]['dt'])}" poP="{weatherPoP(weather['hourly'][2]['pop'])}" temp="{weather['hourly'][2]['temp']}" />
+ 			 </hour>
+  			<hour time24="{hourNext(3, weather['current']['dt'], weather['timezone_offset'])}">
+   			 <condition code="{weatherIcon(weather['hourly'][3]['weather'][0]['id'], weather['current']['sunset'], weather['hourly'][3]['dt'])}" poP="{weatherPoP(weather['hourly'][3]['pop'])}" temp="{weather['hourly'][3]['temp']}" />
+  			</hour>
+  			<hour time24="{hourNext(4, weather['current']['dt'], weather['timezone_offset'])}">
+   			 <condition code="{weatherIcon(weather['hourly'][4]['weather'][0]['id'], weather['current']['sunset'], weather['hourly'][4]['dt'])}" poP="{weatherPoP(weather['hourly'][4]['pop'])}" temp="{weather['hourly'][4]['temp']}" />
+  			</hour>
+ 			 <hour time24="{hourNext(5, weather['current']['dt'], weather['timezone_offset'])}">
+    			<condition code="{weatherIcon(weather['hourly'][5]['weather'][0]['id'], weather['current']['sunset'], weather['hourly'][5]['dt'])}" poP="{weatherPoP(weather['hourly'][5]['pop'])}" temp="{weather['hourly'][5]['temp']}" />
+  			</hour>
+ 			 <hour time24="{hourNext(6, weather['current']['dt'], weather['timezone_offset'])}">
+   			 <condition code="{weatherIcon(weather['hourly'][6]['weather'][0]['id'], weather['current']['sunset'], weather['hourly'][6]['dt'])}" poP="{weatherPoP(weather['hourly'][6]['pop'])}" temp="{weather['hourly'][6]['temp']}" />
+ 			 </hour>
+ 			 <hour time24="{hourNext(7, weather['current']['dt'], weather['timezone_offset'])}">
+   			 <condition code="{weatherIcon(weather['hourly'][7]['weather'][0]['id'], weather['current']['sunset'], weather['hourly'][7]['dt'])}" poP="{weatherPoP(weather['hourly'][7]['pop'])}" temp="{weather['hourly'][7]['temp']}" />
+ 			 </hour>
+  			<hour time24="{hourNext(8, weather['current']['dt'], weather['timezone_offset'])}">
+    			<condition code="{weatherIcon(weather['hourly'][8]['weather'][0]['id'], weather['current']['sunset'], weather['hourly'][8]['dt'])}" poP="{weatherPoP(weather['hourly'][8]['pop'])}" temp="{weather['hourly'][8]['temp']}" />
+ 			 </hour>
+  			<hour time24="{hourNext(9, weather['current']['dt'], weather['timezone_offset'])}">
+   			 <condition code="{weatherIcon(weather['hourly'][9]['weather'][0]['id'], weather['current']['sunset'], weather['hourly'][9]['dt'])}" poP="{weatherPoP(weather['hourly'][9]['pop'])}" temp="{weather['hourly'][9]['temp']}" />
+  			</hour>
+  			<hour time24="{hourNext(10, weather['current']['dt'], weather['timezone_offset'])}">
+    			<condition code="{weatherIcon(weather['hourly'][10]['weather'][0]['id'], weather['current']['sunset'], weather['hourly'][10]['dt'])}" poP="{weatherPoP(weather['hourly'][10]['pop'])}" temp="{weather['hourly'][10]['temp']}" />
+  			</hour>
+ 			 <hour time24="{hourNext(11, weather['current']['dt'], weather['timezone_offset'])}">
+    			<condition code="{weatherIcon(weather['hourly'][11]['weather'][0]['id'], weather['current']['sunset'], weather['hourly'][11]['dt'])}" poP="{weatherPoP(weather['hourly'][11]['pop'])}" temp="{weather['hourly'][11]['temp']}" />
+ 			 </hour>
+			</hourlyforecast>
                         </location>'''
   # I love destroying XML
   xml = firstHalf + forecastStart + forecastMiddle + forecastEnd + hourlyStart + hourlyMiddle + hourlyEnd + lastHalf

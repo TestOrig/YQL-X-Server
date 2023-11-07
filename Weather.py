@@ -56,12 +56,26 @@ def getWeather(lat, lng, woeid):
       return response
     # TODO, None handling lmao
     return None
+  
+def dayOrNight(timestamp):
+    global global_sunrise_time, global_sunset_time
 
-def dayOrNight(sunset):
-  if (time.time() / 1000 < sunset):
-    return True
-  else:
-    return False
+    # Check if the global sunrise and sunset times have been set
+    if global_sunrise_time is None or global_sunset_time is None:
+        print("Global sunrise or sunset time has not been set.")
+        return False  # Or handle the error as you see fit
+    
+    print("Forecast time (epoch):", timestamp)
+    print("Sunrise time (epoch):", global_sunrise_time)
+    print("Sunset time (epoch):", global_sunset_time)
+
+    if global_sunrise_time < timestamp < global_sunset_time:
+        print("DAYTIME for the forecast")
+        return True
+    else:
+        print("NIGHTTIME for the forecast")
+        return False
+
 
 ##
 # 0 = lightning
@@ -88,49 +102,71 @@ def dayOrNight(sunset):
 # 44 = sun&partlycloudy
 # 46 = ice&snow
 # 48 =
-def weatherIcon(id, sunset):
-  day = dayOrNight(sunset)
-  id = str(id)
-  if id[0] == "2": # Thunderstorm
-    return 0
-  if id[0] == "3": # Drizzle 
-    return 11
-  if id[0] == "5": # Rain
-    if not id[1] == "0": # Cloudy rain/Stormy
-      return 9
-    return 11
-  if id[0] == "6": # Snow
-    if id == "600": # Light snow
-      return 13
-    if id == "601" or id == "602": # Snowing
-      return 15
-    if id == "613" or id == "615" or id == "616": # Rain and snow
-      return 35
-    return 15
-  if id[0] == "7": # Atmospheric Conditions
-    if id == "701" or id == "721" or id == "741" or id == "711": # Mist/Haze/Fog/Smoke
-      return 23
-    return 23 # TODO change me
-  if id[0] == "8": # Cloud Conditions
-    if id == "800": # Clear sky
-      return 32
-    if id == "801" or id == "802" or id == "803": # Partly cloudy
-      if day:
-        return 34
-      else:
-        return 33
-    if id == "804":
-      return 27
-  if id[0] == "9": # Extreme conditions
-    if id[3] == "3": # COLD
-      return 25
-    if id[3] == "4": # HOT
-      return 19
-    if id[3] == "6": # HAIL
-      return 17
+
+def weatherIcon(id, sunset, timestamp=None):  # timestamp is optional now
+    day = True if timestamp is None else dayOrNight(timestamp)
+    id = str(id)
+    if id.startswith("2"):  # Thunderstorm
+        return 0  # Lightning
+    if id.startswith("3"):  # Drizzle
+        return 9
+    if id.startswith("5"):  # Rain
+        if id == "500":  # Light rain
+            return 39 if day else 9
+        if id == "501":  # Moderate rain
+            return 11
+        if id in ["502", "503", "504"]:  # Heavy intensity rain
+            return 11
+        if id == "511":  # Freezing rain
+            return 25
+        if id.startswith("52"):  # Shower rain
+            return 11
+    if id.startswith("6"):  # Snow
+        if id in ["600", "620"]:  # Light snow
+            return 13
+        if id in ["601", "621"]:  # Snow
+            return 15
+        if id in ["602", "622"]:  # Heavy snow
+            return 46
+        if id in ["611", "612", "613"]:  # Sleet
+            return 6
+        if id == "615" or id == "616":  # Rain and snow
+            return 35
+    if id.startswith("7"):  # Atmosphere (Mist, Smoke, Haze, etc.)
+        if id == "781":  # Tornado
+            return 0  # No specific icon for tornado, using lightning
+        return 23  # Use the same icon for all misty conditions
+    if id.startswith("8"):  # Clear and clouds
+        if id == "800":  # Clear sky
+            return 32 if day else 31
+        if id == "801":  # Few clouds
+            return 30 if day else 29
+        if id == "802":  # Scattered clouds
+            return 30 if day else 29
+        if id == "803" or id == "804":  # Broken clouds, overcast clouds
+            return 27
+    # Additional codes for extreme weather conditions can be added here with proper mappings
+    # As an example, adding a few more:
+    if id.startswith("9"):  # Extreme
+        if id == "900" or id == "901" or id == "902" or id == "962":  # Tornado + hurricanes
+            return 0
+        if id == "903":  # Cold
+            return 25
+        if id == "904":  # Hot
+            return 19
+        if id == "905":  # Windy
+            return 23
+        if id == "906":  # Hail
+            return 17
+    # Unknown or not assigned codes:
+    return 48  # You can use this as a default 'unknown' code
 
 def weatherPoP(pop):
   return int(float(pop)*100)
+
+def hourNext(n, currTime, timezone_offset):
+  hourTime = time.gmtime(currTime+timezone_offset+(3600*n))
+  return "%s:00" % str(hourTime.tm_hour)
 
 def weatherDate(dt, timezone_offset):
   currTime = time.gmtime(dt+timezone_offset)
@@ -138,12 +174,16 @@ def weatherDate(dt, timezone_offset):
   return f"{str(currTime.tm_hour)}:{str(currTime.tm_min)}"
 
 def weatherSunrise(sunrise, timezone_offset):
-  hourTime = time.gmtime(sunrise+timezone_offset)
-  return f"{str(hourTime.tm_hour)}:{str(hourTime.tm_min)}"
+    global global_sunrise_time
+    global_sunrise_time = sunrise + timezone_offset
+    hourTime = time.gmtime(global_sunrise_time)
+    return f"{str(hourTime.tm_hour)}:{str(hourTime.tm_min)}"
 
 def weatherSunset(sunset, timezone_offset):
-  hourTime = time.gmtime(sunset+timezone_offset)
-  return f"{str(hourTime.tm_hour)}:{str(hourTime.tm_min)}"
+    global global_sunset_time
+    global_sunset_time = sunset + timezone_offset
+    hourTime = time.gmtime(global_sunset_time)
+    return f"{str(hourTime.tm_hour)}:{str(hourTime.tm_min)}"
 
 # My brain is big for the next 2 functions
 def dayNext(n):
@@ -166,9 +206,7 @@ def dayArray():
 # So if you retrieve the hourly data on 11:58PM
 # The first hour reported would be 11:00PM
 
-def hourNext(n, currTime, timezone_offset):
-  hourTime = time.gmtime(currTime+timezone_offset+(3600*n))
-  return "%s:00" % str(hourTime.tm_hour)
+
 
 # Mapping OWM moon phases
 def moonPhase(phase):
