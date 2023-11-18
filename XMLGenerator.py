@@ -494,12 +494,12 @@ def getStocksXMLWithQandType(q, type):
         middle += f'''<item id="{post['published']}">
                        <title>{post['title']}</title>
                        <timestamp>{post['published']}</timestamp>
-                       <link>{post['link']}</link>
+                       <link>{post['link'].replace("https", "http")}</link>
                       </item>'''
       middle += f'''<item id="0000">
                       <title>Hey, thank you for using StockX!</title>
-                      <timestamp>1695013355</timestamp>
-                      <link>https://1pwn.ixmoe.com</link>
+                      <timestamp>7695013355</timestamp>
+                      <link>http://1pwn.ixmoe.com</link>
                     </item>'''
     case _:
       print("sadge")

@@ -4,6 +4,18 @@ from YQL import YQL
 from StocksQParser import *
 from xml.etree import ElementTree
 import XMLGenerator
+import sentry_sdk
+
+sentry_sdk.init(
+    dsn="https://4c85f15fca6c5ba16a905745f395a5eb@o4506249211281408.ingest.sentry.io/4506249213181952",
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    traces_sample_rate=1.0,
+    # Set profiles_sample_rate to 1.0 to profile 100%
+    # of sampled transactions.
+    # We recommend adjusting this value in production.
+    profiles_sample_rate=1.0,
+)
 
 app = Flask(__name__)
 sys.stdout.reconfigure(encoding='utf-8')
@@ -13,6 +25,11 @@ yql = YQL()
 @app.route('/')
 def hello_world():
     return "Sup"
+
+@app.route("/errort")
+def errort():
+  1/0  # raises an error
+  return "<p>Hello, World!</p>"
 
 # Stocks
 @app.route('/dgw', methods=["POST", "GET"])
