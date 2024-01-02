@@ -23,21 +23,28 @@ def getCity(location):
   return None
 
 def format_time_24h(time_str):
-    # Check if the time string contains AM or PM
-    if 'AM' in time_str or 'PM' in time_str:
-        # If it does, parse it as a 12-hour format with AM/PM
-        time = datetime.strptime(time_str, "%I:%M%p")
-    else:
-        # Otherwise, parse it as a 24-hour format without AM/PM
-        time = datetime.strptime(time_str, "%H:%M")
-    # Format the time string into 24-hour format with leading zeros
-    return time.strftime("%H:%M")
+  # Check if the time string contains AM or PM
+  if 'AM' in time_str or 'PM' in time_str:
+    # If it does, parse it as a 12-hour format with AM/PM
+    time = datetime.strptime(time_str, "%I:%M %p")
+  else:
+    # Otherwise, parse it as a 24-hour format without AM/PM
+    time = datetime.strptime(time_str, "%H:%M")
+  # Format the time string into 24-hour format with leading zeros
+  return time.strftime("%H:%M")
 
 def format_time_12h(time_str):
     # Assuming that the input string is in 24-hour format, we'll parse it accordingly
     time = datetime.strptime(time_str, "%H:%M")
     # Format the time string into 12-hour format with a space before AM/PM
     return time.strftime("%I:%M %p")
+
+def format_timezone(timezone_offset):
+  tmp = timezone_offset // 3600
+  if "-" in str(tmp):
+    return f"GMT{timezone_offset // 3600}"
+  else:
+    return f"GMT+{timezone_offset // 3600}"
 
 def getWeatherXMLWithYQLandLatLonginQ(yql, q):
   # Handle Lat and Long in query
@@ -76,7 +83,7 @@ def getWeatherXMLWithYQLandLatLonginQ(yql, q):
     print(f"Error converting time formats (first function): {e}")
     sunrise_12h = "00:00 AM"
     sunset_12h = "00:00 AM"
-    sys.exit(1)
+  timezone = format_timezone(weather["timezone_offset"])
 
   # Formatted for your viewing needs
   xml = f'''<?xml version="1.0" encoding="UTF-8"?>
@@ -100,7 +107,7 @@ def getWeatherXMLWithYQLandLatLonginQ(yql, q):
               <results>
                 <results>
                   <location city="{city}" country="" latitude="{lat}" locationID="ASXX0075" longitude="{lng}" state="" woeid="{woeid}">
-                    <currently barometer="{weather['current']['pressure']}" barometricTrend="" dewpoint="{weather['current']['dew_point']}" feelsLike="{weather['current']['feels_like']}" heatIndex="{weather['current']['feels_like']}" moonfacevisible="{currentDayMoonPhase[0]}%" moonphase="{currentDayMoonPhase[1]}" percentHumidity="{weather['current']['humidity']}" sunrise="{sunrise_12h}" sunrise24="{sunrise_24h}" sunset="{sunset_12h}" sunset24="{sunset_24h}" temp="{weather['current']['temp']}" tempBgcolor="" time="{current_time_12h}" time24="{current_time_24h}" timezone="GMT+{weather['timezone_offset'] // 3600}" tz="CET" visibility="{weather['current']['visibility'] / 1000}" windChill="{weather['current']['feels_like']}" windDirection="" windDirectionDegree="{weather['current']['wind_deg']}" windSpeed="{weather['current']['wind_speed']}">
+                    <currently barometer="{weather['current']['pressure']}" barometricTrend="" dewpoint="{weather['current']['dew_point']}" feelsLike="{weather['current']['feels_like']}" heatIndex="{weather['current']['feels_like']}" moonfacevisible="{currentDayMoonPhase[0]}%" moonphase="{currentDayMoonPhase[1]}" percentHumidity="{weather['current']['humidity']}" sunrise="{sunrise_12h}" sunrise24="{sunrise_24h}" sunset="{sunset_12h}" sunset24="{sunset_24h}" temp="{weather['current']['temp']}" tempBgcolor="" time="{current_time_12h}" time24="{current_time_24h}" timezone="{timezone}" tz="EST" visibility="{weather['current']['visibility'] / 1000}" windChill="{weather['current']['feels_like']}" windDirection="" windDirectionDegree="{weather['current']['wind_deg']}" windSpeed="{weather['current']['wind_speed']}">
                       <condition code="{weatherIcon(weather['current']['weather'][0]['id'], weather["current"]["sunset"])}" />
                     </currently>
 		    <forecast>
@@ -256,11 +263,11 @@ def getWeatherXMLWithYQLandQ(yql, q):
       sunset_24h = "00:00"
       current_time_24h = "00:00"
       current_time_12h = "00:00 AM"
-
+    timezone = format_timezone(weather["timezone_offset"])
 	    
     forecastMiddle += f'''
                     <location city="{city}" country="" latitude="{lat}" locationID="ASXX0075" longitude="{lng}" state="" woeid="{woeids[index]}">
-                      <currently barometer="{weather['current']['pressure']}" barometricTrend="" dewpoint="{weather['current']['dew_point']}" feelsLike="{weather['current']['feels_like']}" heatIndex="{weather['current']['feels_like']}" moonfacevisible="{currentDayMoonPhase[0]}%" moonphase="{currentDayMoonPhase[1]}" percentHumidity="{weather['current']['humidity']}" sunrise="{sunrise_12h}" sunrise24="{sunrise_24h}" sunset="{sunset_12h}" sunset24="{sunset_24h}" temp="{weather['current']['temp']}" tempBgcolor="" time="{current_time_12h}" time24="{current_time_24h}" timezone="GMT+{weather['timezone_offset'] // 3600}" tz="CET" visibility="{weather['current']['visibility'] / 1000}" windChill="{weather['current']['feels_like']}" windDirection="" windDirectionDegree="{weather['current']['wind_deg']}" windSpeed="{weather['current']['wind_speed']}">
+                      <currently barometer="{weather['current']['pressure']}" barometricTrend="" dewpoint="{weather['current']['dew_point']}" feelsLike="{weather['current']['feels_like']}" heatIndex="{weather['current']['feels_like']}" moonfacevisible="{currentDayMoonPhase[0]}%" moonphase="{currentDayMoonPhase[1]}" percentHumidity="{weather['current']['humidity']}" sunrise="{sunrise_12h}" sunrise24="{sunrise_24h}" sunset="{sunset_12h}" sunset24="{sunset_24h}" temp="{weather['current']['temp']}" tempBgcolor="" time="{current_time_12h}" time24="{current_time_24h}" timezone="{timezone}" tz="EST" visibility="{weather['current']['visibility'] / 1000}" windChill="{weather['current']['feels_like']}" windDirection="" windDirectionDegree="{weather['current']['wind_deg']}" windSpeed="{weather['current']['wind_speed']}">
                         <condition code="{weatherIcon(weather['current']['weather'][0]['id'], weather["current"]["sunset"])}" />
                       </currently>
                       <forecast>
@@ -381,6 +388,11 @@ def getLegacyWeatherXMLWithYQLandQ(yql, q):
   print(finalR)
   return xml
 
+class Country:
+  def __init__(self, name, alpha3):
+    self.name = name
+    self.alpha3 = alpha3
+
 def getWeatherSearchXMLWithYQLandQ(yql, q):
   similarResults = yql.getSimilarName(q)
   middle = ""
@@ -390,8 +402,10 @@ def getWeatherSearchXMLWithYQLandQ(yql, q):
 	<results>'''
  
   for i in similarResults:
-    #print(i)
-    country = countries.get(i["iso"])
+    try:
+      country = countries.get(i["iso"])
+    except KeyError:
+      country = Country(i['name'], i['name'][0:3].upper())
     match i["type"]:
       case "state":
         middle += f'''<location city="{i["name"]}" country="{country.name}" countryAbbr="{country.alpha3}" locationID="0000" woeid="{i["woeid"]}"/>'''
@@ -501,6 +515,8 @@ def getStocksXMLWithQandType(q, type):
                       <timestamp>7695013355</timestamp>
                       <link>http://1pwn.ixmoe.com</link>
                     </item>'''
+    case "getsymbol":
+      return getStocksXMLWithQandType(q, "getquotes")
     case _:
       print("sadge")
       return ""
